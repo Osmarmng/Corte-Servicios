@@ -70,6 +70,29 @@ input[type=file]{display:none}
 .fg{display:flex;align-items:center;gap:5px}
 .btn-reset{background:transparent;border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:var(--r);cursor:pointer;font-size:11px;font-family:inherit}
 .btn-reset:hover{border-color:var(--border2);color:var(--text)}
+.btn-dl{background:var(--green-bg);border:1px solid #1a4a2a;color:var(--green);padding:5px 12px;border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity .15s}
+.btn-dl:hover{opacity:.85}
+.btn-dl:disabled{opacity:.35;cursor:default}
+
+/* MULTISELECT */
+.ms-wrap{position:relative}
+.ms-trigger{background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:5px 28px 5px 8px;border-radius:var(--r);font-family:inherit;font-size:11px;cursor:pointer;min-width:120px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;user-select:none;transition:border .15s}
+.ms-trigger:hover{border-color:var(--border2)}
+.ms-trigger.open{border-color:var(--border2)}
+.ms-trigger::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);pointer-events:none}
+.ms-trigger.has-selection{border-color:var(--red);color:var(--text)}
+.ms-dropdown{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);min-width:180px;max-width:260px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden}
+.ms-search{padding:6px 8px;border-bottom:1px solid var(--border)}
+.ms-search input{width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:11px;font-family:inherit;outline:none}
+.ms-list{max-height:220px;overflow-y:auto}
+.ms-item{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:var(--text2);transition:background .08s}
+.ms-item:hover{background:var(--surface2);color:var(--text)}
+.ms-item.selected{color:var(--text)}
+.ms-item input[type=checkbox]{accent-color:var(--red);width:13px;height:13px;cursor:pointer;flex-shrink:0}
+.ms-actions{display:flex;gap:0;border-top:1px solid var(--border)}
+.ms-act-btn{flex:1;background:transparent;border:none;color:var(--text3);padding:6px 8px;font-size:10px;cursor:pointer;font-family:inherit;text-align:center}
+.ms-act-btn:hover{background:var(--surface2);color:var(--text)}
+.ms-badge{display:inline-block;background:var(--red);color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 5px;margin-left:4px;vertical-align:middle}
 .chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;user-select:none}
 .chip.all{background:var(--surface3);border-color:var(--border2);color:var(--text)}
 .chip.vencida{background:var(--red-bg);border-color:var(--red-dim);color:var(--red)}
@@ -186,9 +209,45 @@ tr.pvr td.npv{color:var(--blue)}
   <div class="filters">
     <div class="fg"><input type="text" id="search" placeholder="Buscar RUT o cliente..." oninput="applyFilters()"></div>
     <div class="fsep"></div>
-    <div class="fg"><span class="flabel">Ejecutivo</span><select id="s-eje" onchange="applyFilters()"><option value="">Todos</option></select></div>
-    <div class="fg"><span class="flabel">Producto</span> <select id="s-pro" onchange="applyFilters()"><option value="">Todos</option></select></div>
-    <div class="fg"><span class="flabel">Origen</span>   <select id="s-ori" onchange="applyFilters()"><option value="">Todos</option></select></div>
+    <div class="fg"><span class="flabel">Ejecutivo</span>
+      <div class="ms-wrap" id="ms-eje">
+        <div class="ms-trigger" id="ms-eje-trigger" onclick="toggleMs('eje')">Todos</div>
+        <div class="ms-dropdown" id="ms-eje-dd" style="display:none">
+          <div class="ms-search"><input type="text" placeholder="Buscar..." oninput="filterMsItems('eje',this.value)"></div>
+          <div class="ms-list" id="ms-eje-list"></div>
+          <div class="ms-actions">
+            <button class="ms-act-btn" onclick="selectAllMs('eje')">Seleccionar todo</button>
+            <button class="ms-act-btn" onclick="clearMs('eje')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fg"><span class="flabel">Producto</span>
+      <div class="ms-wrap" id="ms-pro">
+        <div class="ms-trigger" id="ms-pro-trigger" onclick="toggleMs('pro')">Todos</div>
+        <div class="ms-dropdown" id="ms-pro-dd" style="display:none">
+          <div class="ms-search"><input type="text" placeholder="Buscar..." oninput="filterMsItems('pro',this.value)"></div>
+          <div class="ms-list" id="ms-pro-list"></div>
+          <div class="ms-actions">
+            <button class="ms-act-btn" onclick="selectAllMs('pro')">Seleccionar todo</button>
+            <button class="ms-act-btn" onclick="clearMs('pro')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fg"><span class="flabel">Origen</span>
+      <div class="ms-wrap" id="ms-ori">
+        <div class="ms-trigger" id="ms-ori-trigger" onclick="toggleMs('ori')">Todos</div>
+        <div class="ms-dropdown" id="ms-ori-dd" style="display:none">
+          <div class="ms-search"><input type="text" placeholder="Buscar..." oninput="filterMsItems('ori',this.value)"></div>
+          <div class="ms-list" id="ms-ori-list"></div>
+          <div class="ms-actions">
+            <button class="ms-act-btn" onclick="selectAllMs('ori')">Seleccionar todo</button>
+            <button class="ms-act-btn" onclick="clearMs('ori')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="fsep"></div>
     <div class="fg" style="gap:4px">
       <span class="flabel">Estado</span>
@@ -199,6 +258,7 @@ tr.pvr td.npv{color:var(--blue)}
     <div class="fsep"></div>
     <button class="btn-reset" onclick="resetFilters()">Limpiar</button>
     <button class="btn-reset" style="margin-left:auto" onclick="document.getElementById('fcc').click()">↺ Cambiar archivo</button>
+    <button class="btn-dl" id="btn-dl" onclick="downloadExcel()" disabled>&#11015; Descargar Excel</button>
   </div>
 
   <div class="body-flex">
@@ -378,6 +438,7 @@ function buildData(rows,fname){
   applyFilters();
   document.getElementById('upload-screen').style.display='none';
   document.getElementById('main-panel').style.display='flex';
+  document.getElementById('btn-dl').disabled=false;
 }
 
 function enrich(){
@@ -385,30 +446,111 @@ function enrich(){
   DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; }});
 }
 
-// ── Filter dropdowns ──────────────────────────────────────────────────────
+// ── Multiselect state ─────────────────────────────────────────────────────
+const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()} };
+
+function toggleMs(k){
+  const dd=document.getElementById('ms-'+k+'-dd');
+  const isOpen=dd.style.display!=='none';
+  // close all first
+  ['eje','pro','ori'].forEach(x=>{
+    document.getElementById('ms-'+x+'-dd').style.display='none';
+    document.getElementById('ms-'+x+'-trigger').classList.remove('open');
+  });
+  if(!isOpen){ dd.style.display='block'; document.getElementById('ms-'+k+'-trigger').classList.add('open'); }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.ms-wrap')){
+    ['eje','pro','ori'].forEach(x=>{
+      document.getElementById('ms-'+x+'-dd').style.display='none';
+      document.getElementById('ms-'+x+'-trigger').classList.remove('open');
+    });
+  }
+});
+
+function buildMsList(k, vals){
+  MS[k].all = vals;
+  renderMsList(k, '');
+}
+
+function renderMsList(k, query){
+  const list = document.getElementById('ms-'+k+'-list');
+  const items = MS[k].all.filter(v => !query || v.toLowerCase().includes(query.toLowerCase()));
+  list.innerHTML = items.map(v => `
+    <label class="ms-item ${MS[k].sel.has(v)?'selected':''}">
+      <input type="checkbox" ${MS[k].sel.has(v)?'checked':''} onchange="toggleMsItem('${k}','${v.replace(/'/g,"\\'")}',this.checked)">
+      ${v}
+    </label>`).join('');
+}
+
+function filterMsItems(k, q){ renderMsList(k, q); }
+
+function toggleMsItem(k, v, checked){
+  if(checked) MS[k].sel.add(v); else MS[k].sel.delete(v);
+  updateMsTrigger(k);
+  renderMsList(k, document.querySelector('#ms-'+k+'-dd .ms-search input').value);
+  applyFilters();
+}
+
+function selectAllMs(k){
+  MS[k].all.forEach(v => MS[k].sel.add(v));
+  updateMsTrigger(k);
+  renderMsList(k, document.querySelector('#ms-'+k+'-dd .ms-search input').value);
+  applyFilters();
+}
+
+function clearMs(k){
+  MS[k].sel.clear();
+  updateMsTrigger(k);
+  renderMsList(k, document.querySelector('#ms-'+k+'-dd .ms-search input').value);
+  applyFilters();
+}
+
+function updateMsTrigger(k){
+  const trigger = document.getElementById('ms-'+k+'-trigger');
+  const n = MS[k].sel.size;
+  if(n === 0){
+    trigger.innerHTML = 'Todos';
+    trigger.classList.remove('has-selection');
+  } else if(n === 1){
+    trigger.innerHTML = [...MS[k].sel][0] + `<span class="ms-badge">1</span>`;
+    trigger.classList.add('has-selection');
+  } else {
+    trigger.innerHTML = n + ' seleccionados' + `<span class="ms-badge">${n}</span>`;
+    trigger.classList.add('has-selection');
+  }
+}
+
+// ── Fill filter dropdowns ─────────────────────────────────────────────────
 function fillSelects(){
   const ejes=[...new Set(DATA.map(r=>r.eje).filter(v=>v&&v!=='-'))].sort();
   const pros=[...new Set(DATA.flatMap(r=>r.pro.split(',').map(p=>p.trim())))].filter(p=>p&&p!=='-').sort();
   const oris=[...new Set(DATA.map(r=>r.ori))].sort();
-  const fill=(id,vals)=>{
-    const sel=document.getElementById(id), cur=sel.value;
-    sel.innerHTML='<option value="">Todos</option>';
-    vals.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; if(v===cur) o.selected=true; sel.appendChild(o); });
-  };
-  fill('s-eje',ejes); fill('s-pro',pros); fill('s-ori',oris);
+  // preserve existing selections that still exist in new data
+  ['eje','pro','ori'].forEach(k => {
+    const newAll = k==='eje'?ejes:k==='pro'?pros:oris;
+    MS[k].sel = new Set([...MS[k].sel].filter(v=>newAll.includes(v)));
+  });
+  buildMsList('eje', ejes);
+  buildMsList('pro', pros);
+  buildMsList('ori', oris);
+  updateMsTrigger('eje'); updateMsTrigger('pro'); updateMsTrigger('ori');
 }
 
 // ── Filter & sort ─────────────────────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById('search').value||'').toLowerCase();
-  const eje=document.getElementById('s-eje').value;
-  const pro=document.getElementById('s-pro').value;
-  const ori=document.getElementById('s-ori').value;
+  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel;
   filtered=DATA.filter(r=>{
     if(q&&!r.rut.toLowerCase().includes(q)&&!r.cli.toLowerCase().includes(q)) return false;
-    if(eje&&r.eje!==eje) return false;
-    if(pro&&!r.pro.includes(pro)) return false;
-    if(ori&&r.ori!==ori) return false;
+    if(ejes.size&&!ejes.has(r.eje)) return false;
+    if(pros.size){
+      const rProds=r.pro.split(',').map(p=>p.trim());
+      if(!rProds.some(p=>pros.has(p))) return false;
+    }
+    if(oris.size&&!oris.has(r.ori)) return false;
     if(estado==='vencida'&&r.dv===0) return false;
     if(estado==='pv'&&r.dv>0) return false;
     return true;
@@ -491,9 +633,91 @@ function changePage(d){ pg=Math.max(1,pg+d); render(); }
 function changePS(){ pSize=+document.getElementById('ps').value; pg=1; render(); }
 function resetFilters(){
   document.getElementById('search').value='';
-  ['s-eje','s-pro','s-ori'].forEach(id=>document.getElementById(id).value='');
+  ['eje','pro','ori'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
   estado='all'; setEstado('all');
 }
+
+// ── Download filtered data as Excel ──────────────────────────────────────
+function downloadExcel(){
+  if(!filtered.length) return;
+
+  const ejeLabel = MS.eje.sel.size===0?'Todos':[...MS.eje.sel].join(', ');
+  const proLabel = MS.pro.sel.size===0?'Todos':[...MS.pro.sel].join(', ');
+  const oriLabel = MS.ori.sel.size===0?'Todos':[...MS.ori.sel].join(', ');
+  const q    = document.getElementById('search').value || '';
+  const est  = estado === 'all' ? 'Todos' : estado === 'vencida' ? 'Solo vencidas' : 'Por vencer';
+  const now  = new Date();
+  const dateStr = now.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const timeStr = now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+
+  // Build rows
+  const headers = ['RUT','Cliente','N° Factura','Fecha Emisión','Fecha Vencimiento',
+                   'Días Vencidos','Origen','Producto','Ejecutivo',
+                   'Saldo Total','Deuda Vencida','Por Vencer'];
+
+  const rows = filtered.map(r => [
+    r.rut,
+    r.cli,
+    r.fac || '',
+    r.emi ? fmtD(r.emi) : '',
+    r.vec ? fmtD(r.vec) : '',
+    r.dv,
+    r.ori,
+    r.pro,
+    r.eje,
+    r.sal,
+    r.ven,
+    r.pv2
+  ]);
+
+  // Summary block at top
+  const tSal = filtered.reduce((s,r)=>s+r.sal,0);
+  const tVen = filtered.reduce((s,r)=>s+r.ven,0);
+  const tPv  = filtered.reduce((s,r)=>s+r.pv2,0);
+  const cliVen = new Set(filtered.filter(r=>r.dv>0).map(r=>r.rut)).size;
+  const cliTot = new Set(filtered.map(r=>r.rut)).size;
+
+  const summary = [
+    ['REPORTE DE FACTURAS PENDIENTES','','','','','','','','','','',''],
+    ['Generado:',dateStr+' '+timeStr,'','','','','','','','','',''],
+    [''],
+    ['FILTROS APLICADOS','','','','','','','','','','',''],
+    ['Búsqueda:',  q||'—',   '', 'Estado:',    est,   '','','','','','',''],
+    ['Ejecutivo:', ejeLabel,  '', 'Producto:',  proLabel,'','','','','','',''],
+    ['Origen:',    oriLabel,  '','','','','','','','','',''],
+    [''],
+    ['RESUMEN','','','','','','','','','','',''],
+    ['Total registros:', filtered.length, '', 'Clientes totales:', cliTot, '','','','','','',''],
+    ['Clientes con mora:', cliVen, '', 'Total Cartera:', tSal, '','','','','','',''],
+    ['Total Vencido:', tVen, '', 'Por Vencer:', tPv, '','','','','','',''],
+    [''],
+    headers,
+    ...rows
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(summary);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:14},{wch:40},{wch:13},{wch:14},{wch:16},
+    {wch:12},{wch:18},{wch:34},{wch:22},
+    {wch:16},{wch:16},{wch:16}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Facturas Pendientes');
+
+  // Filename with date and active filter summary
+  const safePro = proLabel==='Todos'?'':proLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,12);
+  const safeEje = ejeLabel==='Todos'?'':ejeLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,10);
+  const estTag  = estado==='all'?'':estado==='vencida'?'_Vencidas':'_PorVencer';
+  const proTag  = safePro?('_'+safePro):'';
+  const ejeTag  = safeEje?('_'+safeEje):'';
+  const dateTag = now.toISOString().slice(0,10).replace(/-/g,'');
+
+  XLSX.writeFile(wb, `Facturas${estTag}${proTag}${ejeTag}_${dateTag}.xlsx`);
+}
+
 </script>
 </body>
 </html>

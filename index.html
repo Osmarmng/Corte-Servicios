@@ -93,6 +93,11 @@ input[type=file]{display:none}
 .ms-act-btn{flex:1;background:transparent;border:none;color:var(--text3);padding:6px 8px;font-size:10px;cursor:pointer;font-family:inherit;text-align:center}
 .ms-act-btn:hover{background:var(--surface2);color:var(--text)}
 .ms-badge{display:inline-block;background:var(--red);color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 5px;margin-left:4px;vertical-align:middle}
+/* TIPO badges */
+.tipo-asp{background:#0d1f35;color:#4a9eff;border:1px solid #1a3a5a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.tipo-man{background:#2a1e08;color:#e8a020;border:1px solid #4a3810;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.tipo-both{background:#1a1535;color:#9b7fe8;border:1px solid #2e2550;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.tipo-otros{background:var(--surface3);color:var(--text2);border:1px solid var(--border);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;user-select:none}
 .chip.all{background:var(--surface3);border-color:var(--border2);color:var(--text)}
 .chip.vencida{background:var(--red-bg);border-color:var(--red-dim);color:var(--red)}
@@ -248,6 +253,18 @@ tr.pvr td.npv{color:var(--blue)}
         </div>
       </div>
     </div>
+    <div class="fg"><span class="flabel">Tipo</span>
+      <div class="ms-wrap" id="ms-tip">
+        <div class="ms-trigger" id="ms-tip-trigger" onclick="toggleMs('tip')">Todos</div>
+        <div class="ms-dropdown" id="ms-tip-dd" style="display:none">
+          <div class="ms-list" id="ms-tip-list"></div>
+          <div class="ms-actions">
+            <button class="ms-act-btn" onclick="selectAllMs('tip')">Seleccionar todo</button>
+            <button class="ms-act-btn" onclick="clearMs('tip')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="fsep"></div>
     <div class="fg" style="gap:4px">
       <span class="flabel">Estado</span>
@@ -273,6 +290,7 @@ tr.pvr td.npv{color:var(--blue)}
           <th onclick="sortBy('dv')"  id="h-dv" class="sorted">Días Venc. ↓</th>
           <th>Origen</th>
           <th onclick="sortBy('pro')" id="h-pro">Producto</th>
+          <th onclick="sortBy('tip')" id="h-tip">Tipo</th>
           <th onclick="sortBy('eje')" id="h-eje">Ejecutivo</th>
           <th onclick="sortBy('sal')" id="h-sal" style="text-align:right">Saldo Total</th>
           <th onclick="sortBy('ven')" id="h-ven" style="text-align:right">Deuda Vencida</th>
@@ -330,6 +348,20 @@ function parseDate(v){
 function fmtD(d){ return d?d.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'; }
 function diffDays(d){ if(!d) return 0; const ms=TODAY-d; return ms>0?Math.floor(ms/86400000):0; }
 
+function clasificarTipo(fam){
+  if(!fam||fam==='-') return '-';
+  const hasAsp=fam.includes('ASP'), hasMan=fam.includes('Mantención');
+  if(hasAsp&&hasMan) return 'ASP / Mantención';
+  if(hasAsp) return 'ASP';
+  if(hasMan) return 'Mantención';
+  return 'Otros';
+}
+function tipBadge(t){
+  if(t==='ASP')              return `<span class="tipo-asp">ASP</span>`;
+  if(t==='Mantención')       return `<span class="tipo-man">Mantención</span>`;
+  if(t==='ASP / Mantención') return `<span class="tipo-both">ASP / Mant.</span>`;
+  return `<span class="tipo-otros">${t||'—'}</span>`;
+}
 function getOri(ref){
   if(!ref) return {lbl:'Sin ref.',cls:'bo'};
   const r=String(ref).trim();
@@ -369,7 +401,8 @@ function handleSQL(e){
         const rut=String(row['rut']||'').trim();
         if(rut) sqlMap[rut]={
           pro:String(row['subfamilia_contrato']||'-').trim(),
-          eje:String(row['comisionista_contrato']||'-').trim()
+          eje:String(row['comisionista_contrato']||'-').trim(),
+          fam:String(row['familia_contrato']||'').trim()
         };
       });
       const st=document.getElementById('sql-status');
@@ -423,7 +456,7 @@ function buildData(rows,fname){
       fac:parseInt(r['NumDocumento']||r['num_documento']||0)||0,
       emi, vec, dv,
       ori:ori.lbl, oriC:ori.cls,
-      pro:'-',
+      pro:'-', tip:'-',
       eje:String(r['Cobrador']||r['cobrador']||'-').trim(),
       sal, ven:dv>0?sal:0, pv2:dv===0?sal:0
     });
@@ -443,17 +476,17 @@ function buildData(rows,fname){
 
 function enrich(){
   if(!Object.keys(sqlMap).length) return;
-  DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; }});
+  DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam); }});
 }
 
 // ── Multiselect state ─────────────────────────────────────────────────────
-const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()} };
+const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()}, tip:{all:[],sel:new Set()} };
 
 function toggleMs(k){
   const dd=document.getElementById('ms-'+k+'-dd');
   const isOpen=dd.style.display!=='none';
   // close all first
-  ['eje','pro','ori'].forEach(x=>{
+  ['eje','pro','ori','tip'].forEach(x=>{
     document.getElementById('ms-'+x+'-dd').style.display='none';
     document.getElementById('ms-'+x+'-trigger').classList.remove('open');
   });
@@ -463,7 +496,7 @@ function toggleMs(k){
 // Close dropdowns when clicking outside
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')){
-    ['eje','pro','ori'].forEach(x=>{
+    ['eje','pro','ori','tip'].forEach(x=>{
       document.getElementById('ms-'+x+'-dd').style.display='none';
       document.getElementById('ms-'+x+'-trigger').classList.remove('open');
     });
@@ -528,21 +561,21 @@ function fillSelects(){
   const ejes=[...new Set(DATA.map(r=>r.eje).filter(v=>v&&v!=='-'))].sort();
   const pros=[...new Set(DATA.flatMap(r=>r.pro.split(',').map(p=>p.trim())))].filter(p=>p&&p!=='-').sort();
   const oris=[...new Set(DATA.map(r=>r.ori))].sort();
-  // preserve existing selections that still exist in new data
-  ['eje','pro','ori'].forEach(k => {
-    const newAll = k==='eje'?ejes:k==='pro'?pros:oris;
+  const tips=[...new Set(DATA.map(r=>r.tip).filter(v=>v&&v!=='-'))].sort();
+  ['eje','pro','ori','tip'].forEach(k => {
+    const newAll = k==='eje'?ejes:k==='pro'?pros:k==='ori'?oris:tips;
     MS[k].sel = new Set([...MS[k].sel].filter(v=>newAll.includes(v)));
   });
-  buildMsList('eje', ejes);
-  buildMsList('pro', pros);
-  buildMsList('ori', oris);
-  updateMsTrigger('eje'); updateMsTrigger('pro'); updateMsTrigger('ori');
+  buildMsList('eje', ejes); buildMsList('pro', pros);
+  buildMsList('ori', oris); buildMsList('tip', tips);
+  updateMsTrigger('eje'); updateMsTrigger('pro');
+  updateMsTrigger('ori'); updateMsTrigger('tip');
 }
 
 // ── Filter & sort ─────────────────────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById('search').value||'').toLowerCase();
-  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel;
+  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel; const tips=MS.tip.sel;
   filtered=DATA.filter(r=>{
     if(q&&!r.rut.toLowerCase().includes(q)&&!r.cli.toLowerCase().includes(q)) return false;
     if(ejes.size&&!ejes.has(r.eje)) return false;
@@ -551,6 +584,7 @@ function applyFilters(){
       if(!rProds.some(p=>pros.has(p))) return false;
     }
     if(oris.size&&!oris.has(r.ori)) return false;
+    if(tips.size&&!tips.has(r.tip)) return false;
     if(estado==='vencida'&&r.dv===0) return false;
     if(estado==='pv'&&r.dv>0) return false;
     return true;
@@ -580,7 +614,7 @@ function sortBy(k){
     th.classList.remove('sorted');
     th.textContent=th.textContent.replace(/ [↑↓]$/,'');
   });
-  const map={rut:'h-rut',cli:'h-cli',fac:'h-fac',emi:'h-emi',vec:'h-vec',dv:'h-dv',pro:'h-pro',eje:'h-eje',sal:'h-sal',ven:'h-ven',pv2:'h-pv'};
+  const map={rut:'h-rut',cli:'h-cli',fac:'h-fac',emi:'h-emi',vec:'h-vec',dv:'h-dv',pro:'h-pro',tip:'h-tip',eje:'h-eje',sal:'h-sal',ven:'h-ven',pv2:'h-pv'};
   const th=document.getElementById(map[k]);
   if(th){th.classList.add('sorted');th.textContent+=sDir===1?' ↑':' ↓';}
   doSort(); render();
@@ -600,6 +634,7 @@ function render(){
       <td class="dvc">${dvPill(r.dv)}</td>
       <td><span class="badge ${r.oriC}">${r.ori}</span></td>
       <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">${r.pro}</td>
+      <td>${tipBadge(r.tip)}</td>
       <td style="color:var(--text2)">${r.eje}</td>
       <td class="num">${fmt(r.sal)}</td>
       <td class="num nven">${r.ven>0?fmt(r.ven):'—'}</td>
@@ -633,7 +668,7 @@ function changePage(d){ pg=Math.max(1,pg+d); render(); }
 function changePS(){ pSize=+document.getElementById('ps').value; pg=1; render(); }
 function resetFilters(){
   document.getElementById('search').value='';
-  ['eje','pro','ori'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
+  ['eje','pro','ori','tip'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
   estado='all'; setEstado('all');
 }
 
@@ -650,24 +685,19 @@ function downloadExcel(){
   const dateStr = now.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
   const timeStr = now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
 
+  const tipLabel = MS.tip.sel.size===0?'Todos':[...MS.tip.sel].join(', ');
+
   // Build rows
   const headers = ['RUT','Cliente','N° Factura','Fecha Emisión','Fecha Vencimiento',
-                   'Días Vencidos','Origen','Producto','Ejecutivo',
+                   'Días Vencidos','Origen','Producto','Tipo','Ejecutivo',
                    'Saldo Total','Deuda Vencida','Por Vencer'];
 
   const rows = filtered.map(r => [
-    r.rut,
-    r.cli,
-    r.fac || '',
+    r.rut, r.cli, r.fac||'',
     r.emi ? fmtD(r.emi) : '',
     r.vec ? fmtD(r.vec) : '',
-    r.dv,
-    r.ori,
-    r.pro,
-    r.eje,
-    r.sal,
-    r.ven,
-    r.pv2
+    r.dv, r.ori, r.pro, r.tip, r.eje,
+    r.sal, r.ven, r.pv2
   ]);
 
   // Summary block at top
@@ -678,18 +708,18 @@ function downloadExcel(){
   const cliTot = new Set(filtered.map(r=>r.rut)).size;
 
   const summary = [
-    ['REPORTE DE FACTURAS PENDIENTES','','','','','','','','','','',''],
-    ['Generado:',dateStr+' '+timeStr,'','','','','','','','','',''],
+    ['REPORTE DE FACTURAS PENDIENTES','','','','','','','','','','','',''],
+    ['Generado:',dateStr+' '+timeStr,'','','','','','','','','','',''],
     [''],
-    ['FILTROS APLICADOS','','','','','','','','','','',''],
-    ['Búsqueda:',  q||'—',   '', 'Estado:',    est,   '','','','','','',''],
-    ['Ejecutivo:', ejeLabel,  '', 'Producto:',  proLabel,'','','','','','',''],
-    ['Origen:',    oriLabel,  '','','','','','','','','',''],
+    ['FILTROS APLICADOS','','','','','','','','','','','',''],
+    ['Búsqueda:',  q||'—',    '', 'Estado:',   est,      '','','','','','','',''],
+    ['Ejecutivo:', ejeLabel,   '', 'Producto:', proLabel, '','','','','','','',''],
+    ['Origen:',    oriLabel,   '', 'Tipo:',     tipLabel, '','','','','','','',''],
     [''],
-    ['RESUMEN','','','','','','','','','','',''],
-    ['Total registros:', filtered.length, '', 'Clientes totales:', cliTot, '','','','','','',''],
-    ['Clientes con mora:', cliVen, '', 'Total Cartera:', tSal, '','','','','','',''],
-    ['Total Vencido:', tVen, '', 'Por Vencer:', tPv, '','','','','','',''],
+    ['RESUMEN','','','','','','','','','','','',''],
+    ['Total registros:', filtered.length, '', 'Clientes totales:', cliTot, '','','','','','','',''],
+    ['Clientes con mora:', cliVen, '', 'Total Cartera:', tSal, '','','','','','','',''],
+    ['Total Vencido:', tVen, '', 'Por Vencer:', tPv, '','','','','','','',''],
     [''],
     headers,
     ...rows
@@ -700,22 +730,23 @@ function downloadExcel(){
   // Column widths
   ws['!cols'] = [
     {wch:14},{wch:40},{wch:13},{wch:14},{wch:16},
-    {wch:12},{wch:18},{wch:34},{wch:22},
+    {wch:12},{wch:18},{wch:34},{wch:18},{wch:22},
     {wch:16},{wch:16},{wch:16}
   ];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Facturas Pendientes');
 
-  // Filename with date and active filter summary
   const safePro = proLabel==='Todos'?'':proLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,12);
   const safeEje = ejeLabel==='Todos'?'':ejeLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,10);
+  const safeTip = tipLabel==='Todos'?'':tipLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,8);
   const estTag  = estado==='all'?'':estado==='vencida'?'_Vencidas':'_PorVencer';
   const proTag  = safePro?('_'+safePro):'';
   const ejeTag  = safeEje?('_'+safeEje):'';
+  const tipTag  = safeTip?('_'+safeTip):'';
   const dateTag = now.toISOString().slice(0,10).replace(/-/g,'');
 
-  XLSX.writeFile(wb, `Facturas${estTag}${proTag}${ejeTag}_${dateTag}.xlsx`);
+  XLSX.writeFile(wb, `Facturas${estTag}${proTag}${ejeTag}${tipTag}_${dateTag}.xlsx`);
 }
 
 </script>

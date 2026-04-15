@@ -100,6 +100,7 @@ input[type=file]{display:none}
 .tipo-pt{background:#0d2a1a;color:#3dba7a;border:1px solid #1a4a2a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .tipo-comp{background:#2a1515;color:#e06060;border:1px solid #4a2020;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .tipo-cons{background:#1a2a2a;color:#2ec4b6;border:1px solid #1a4040;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.tipo-man-pt{background:#2a1e08;color:#c8880a;border:1px solid #5a3a08;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .tipo-otros{background:var(--surface3);color:var(--text2);border:1px solid var(--border);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;user-select:none}
 .chip.all{background:var(--surface3);border-color:var(--border2);color:var(--text)}
@@ -354,24 +355,48 @@ function diffDays(d){ if(!d) return 0; const ms=TODAY-d; return ms>0?Math.floor(
 
 function clasificarTipo(fam){
   if(!fam||fam.trim()===''||fam==='nan'||fam==='-') return 'Sin contrato';
-  const MAIN = ['ASP','Mantención','Complementarios','Consultoría','Licencias'];
   const parts = fam.split(',').map(p=>p.trim());
-  const main  = [...new Set(parts.filter(p=>MAIN.includes(p)))].sort();
-  if(main.length) return main.join(' / ');
-  if(parts.includes('Productos Terceros')) return 'Productos Terceros';
-  return 'Sin contrato';
+  const has = f => parts.includes(f);
+  const hasAsp  = has('ASP');
+  const hasMan  = has('Mantención');
+  const hasPT   = has('Productos Terceros');
+  const hasComp = has('Complementarios');
+  const hasCons = has('Consultoría');
+  const hasLic  = has('Licencias');
+
+  // Build label from meaningful families only
+  const main = [];
+  if(hasAsp)  main.push('ASP');
+  if(hasMan)  main.push('Mantención');
+  if(hasComp) main.push('Complementarios');
+  if(hasCons) main.push('Consultoría');
+  if(hasLic)  main.push('Licencias');
+
+  if(main.length === 0){
+    return hasPT ? 'Productos Terceros' : 'Sin contrato';
+  }
+
+  // Append Productos Terceros only when it's the ONLY extra component
+  // so "Mantención + PT" shows differently from pure "Mantención"
+  if(hasPT) main.push('Productos Terceros');
+
+  return main.join(' / ');
 }
 function tipBadge(t){
   if(!t||t==='-'||t==='Sin contrato') return `<span style="color:var(--text3);font-size:11px">—</span>`;
   const MAP = {
-    'ASP':                              'tipo-asp',
-    'Mantención':                       'tipo-man',
-    'ASP / Mantención':                 'tipo-both',
-    'Productos Terceros':               'tipo-pt',
-    'ASP / Complementarios':            'tipo-comp',
-    'Complementarios / Mantención':     'tipo-comp',
-    'ASP / Complementarios / Mantención':'tipo-comp',
-    'ASP / Consultoría':                'tipo-cons',
+    'ASP':                                            'tipo-asp',
+    'ASP / Productos Terceros':                       'tipo-asp',
+    'Mantención':                                     'tipo-man',
+    'ASP / Mantención':                               'tipo-both',
+    'ASP / Mantención / Productos Terceros':          'tipo-both',
+    'Mantención / Productos Terceros':                'tipo-man-pt',
+    'Productos Terceros':                             'tipo-pt',
+    'ASP / Complementarios':                          'tipo-comp',
+    'ASP / Complementarios / Productos Terceros':     'tipo-comp',
+    'ASP / Complementarios / Mantención / Productos Terceros': 'tipo-comp',
+    'Complementarios / Mantención':                   'tipo-comp',
+    'ASP / Consultoría / Productos Terceros':         'tipo-cons',
   };
   const cls = MAP[t] || 'tipo-otros';
   return `<span class="${cls}">${t}</span>`;

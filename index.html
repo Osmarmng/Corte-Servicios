@@ -257,6 +257,7 @@ tr.pvr td.npv{color:var(--blue)}
       <div class="ms-wrap" id="ms-tip">
         <div class="ms-trigger" id="ms-tip-trigger" onclick="toggleMs('tip')">Todos</div>
         <div class="ms-dropdown" id="ms-tip-dd" style="display:none">
+          <div class="ms-search"><input type="text" placeholder="Buscar..." oninput="filterMsItems('tip',this.value)"></div>
           <div class="ms-list" id="ms-tip-list"></div>
           <div class="ms-actions">
             <button class="ms-act-btn" onclick="selectAllMs('tip')">Seleccionar todo</button>
@@ -523,21 +524,24 @@ function filterMsItems(k, q){ renderMsList(k, q); }
 function toggleMsItem(k, v, checked){
   if(checked) MS[k].sel.add(v); else MS[k].sel.delete(v);
   updateMsTrigger(k);
-  renderMsList(k, document.querySelector('#ms-'+k+'-dd .ms-search input').value);
+  const si=document.querySelector('#ms-'+k+'-dd .ms-search input');
+  renderMsList(k, si?si.value:'');
   applyFilters();
 }
 
 function selectAllMs(k){
   MS[k].all.forEach(v => MS[k].sel.add(v));
   updateMsTrigger(k);
-  renderMsList(k, document.querySelector('#ms-'+k+'-dd .ms-search input').value);
+  const si=document.querySelector('#ms-'+k+'-dd .ms-search input');
+  renderMsList(k, si?si.value:'');
   applyFilters();
 }
 
 function clearMs(k){
   MS[k].sel.clear();
   updateMsTrigger(k);
-  renderMsList(k, document.querySelector('#ms-'+k+'-dd .ms-search input').value);
+  const si=document.querySelector('#ms-'+k+'-dd .ms-search input');
+  renderMsList(k, si?si.value:'');
   applyFilters();
 }
 

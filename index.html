@@ -353,50 +353,48 @@ function parseDate(v){
 function fmtD(d){ return d?d.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'; }
 function diffDays(d){ if(!d) return 0; const ms=TODAY-d; return ms>0?Math.floor(ms/86400000):0; }
 
-function clasificarTipo(fam){
-  if(!fam||fam.trim()===''||fam==='nan'||fam==='-') return 'Sin contrato';
-  const parts = fam.split(',').map(p=>p.trim());
-  const has = f => parts.includes(f);
-  const hasAsp  = has('ASP');
-  const hasMan  = has('Mantención');
-  const hasPT   = has('Productos Terceros');
-  const hasComp = has('Complementarios');
-  const hasCons = has('Consultoría');
-  const hasLic  = has('Licencias');
+// ── Product category definitions ─────────────────────────────────────────
+const CAT_ASP  = new Set(['Time','Flexline','Manager+']);
+const CAT_PT   = new Set(['Factura Electrónica','REX+','Bnovus','GeoVictoria']);
+const CAT_MANT = new Set(['Flexline','Time']);
+const CAT_COMP = new Set(['Senegocia','Cobranza Web','Power BI','Venta Movil','Rindegastos']);
 
-  // Build label from meaningful families only
-  const main = [];
-  if(hasAsp)  main.push('ASP');
-  if(hasMan)  main.push('Mantención');
-  if(hasComp) main.push('Complementarios');
-  if(hasCons) main.push('Consultoría');
-  if(hasLic)  main.push('Licencias');
+function clasificarTipo(fam, sub){
+  if(!sub || sub.trim()==='' || sub==='nan' || sub==='-') return 'Sin contrato';
 
-  if(main.length === 0){
-    return hasPT ? 'Productos Terceros' : 'Sin contrato';
-  }
+  const prods  = new Set(sub.split(',').map(p => p.trim()));
+  const famStr = fam || '';
 
-  // Append Productos Terceros only when it's the ONLY extra component
-  // so "Mantención + PT" shows differently from pure "Mantención"
-  if(hasPT) main.push('Productos Terceros');
+  const hasAspFam  = famStr.includes('ASP');
+  const hasMantFam = famStr.includes('Mantención');
 
-  return main.join(' / ');
+  const hasAsp  = hasAspFam  && [...prods].some(p => CAT_ASP.has(p));
+  const hasMant = hasMantFam && [...prods].some(p => CAT_MANT.has(p));
+  const hasPT   = [...prods].some(p => CAT_PT.has(p));
+  const hasComp = [...prods].some(p => CAT_COMP.has(p));
+
+  const cats = [];
+  if(hasAsp)  cats.push('ASP');
+  if(hasMant) cats.push('Mantención');
+  if(hasPT)   cats.push('Productos Terceros');
+  if(hasComp) cats.push('Complementarios');
+
+  if(!cats.length) return 'Sin contrato';
+  return cats.join(' / ');
 }
 function tipBadge(t){
   if(!t||t==='-'||t==='Sin contrato') return `<span style="color:var(--text3);font-size:11px">—</span>`;
   const MAP = {
-    'ASP':                                            'tipo-asp',
-    'ASP / Productos Terceros':                       'tipo-asp',
-    'Mantención':                                     'tipo-man',
-    'ASP / Mantención':                               'tipo-both',
-    'ASP / Mantención / Productos Terceros':          'tipo-both',
-    'Mantención / Productos Terceros':                'tipo-man-pt',
-    'Productos Terceros':                             'tipo-pt',
-    'ASP / Complementarios':                          'tipo-comp',
-    'ASP / Complementarios / Productos Terceros':     'tipo-comp',
-    'ASP / Complementarios / Mantención / Productos Terceros': 'tipo-comp',
-    'Complementarios / Mantención':                   'tipo-comp',
-    'ASP / Consultoría / Productos Terceros':         'tipo-cons',
+    'ASP':                                      'tipo-asp',
+    'ASP / Productos Terceros':                 'tipo-asp',
+    'ASP / Complementarios':                    'tipo-comp',
+    'ASP / Productos Terceros / Complementarios':'tipo-comp',
+    'Mantención':                               'tipo-man',
+    'Mantención / Productos Terceros':          'tipo-man-pt',
+    'ASP / Mantención':                         'tipo-both',
+    'ASP / Mantención / Productos Terceros':    'tipo-both',
+    'Productos Terceros':                       'tipo-pt',
+    'Productos Terceros / Complementarios':     'tipo-pt',
   };
   const cls = MAP[t] || 'tipo-otros';
   return `<span class="${cls}">${t}</span>`;
@@ -441,7 +439,8 @@ function handleSQL(e){
         if(rut) sqlMap[rut]={
           pro:String(row['subfamilia_contrato']||'-').trim(),
           eje:String(row['comisionista_contrato']||'-').trim(),
-          fam:String(row['familia_contrato']||'').trim()
+          fam:String(row['familia_contrato']||'').trim(),
+          sub:String(row['subfamilia_contrato']||'').trim()
         };
       });
       const st=document.getElementById('sql-status');
@@ -515,7 +514,7 @@ function buildData(rows,fname){
 
 function enrich(){
   if(!Object.keys(sqlMap).length) return;
-  DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam); }});
+  DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam, m.sub); }});
 }
 
 // ── Multiselect state ─────────────────────────────────────────────────────

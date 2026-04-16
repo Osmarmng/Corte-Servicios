@@ -73,6 +73,12 @@ input[type=file]{display:none}
 .btn-dl{background:var(--green-bg);border:1px solid #1a4a2a;color:var(--green);padding:5px 12px;border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity .15s}
 .btn-dl:hover{opacity:.85}
 .btn-dl:disabled{opacity:.35;cursor:default}
+.btn-corte{background:#2a1535;border:1px solid #5a2a8a;color:#c090ff;padding:5px 12px;border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity .15s;letter-spacing:.3px}
+.btn-corte:hover{opacity:.85}
+.btn-corte:disabled{opacity:.35;cursor:default}
+.dias-wrap{display:flex;align-items:center;gap:5px}
+.dias-input{background:var(--surface3);border:1px solid #5a2a8a;color:#c090ff;padding:4px 6px;border-radius:var(--r);font-size:11px;font-family:'Courier New',monospace;width:52px;text-align:center;outline:none}
+.dias-input:focus{border-color:#9b7fe8}
 
 /* MULTISELECT */
 .ms-wrap{position:relative}
@@ -81,7 +87,7 @@ input[type=file]{display:none}
 .ms-trigger.open{border-color:var(--border2)}
 .ms-trigger::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);pointer-events:none}
 .ms-trigger.has-selection{border-color:var(--red);color:var(--text)}
-.ms-dropdown{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);min-width:180px;max-width:260px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden}
+.ms-dropdown{position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);min-width:180px;max-width:280px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.6);overflow:hidden}
 .ms-search{padding:6px 8px;border-bottom:1px solid var(--border)}
 .ms-search input{width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:11px;font-family:inherit;outline:none}
 .ms-list{max-height:220px;overflow-y:auto}
@@ -102,6 +108,11 @@ input[type=file]{display:none}
 .tipo-cons{background:#1a2a2a;color:#2ec4b6;border:1px solid #1a4040;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .tipo-man-pt{background:#2a1e08;color:#c8880a;border:1px solid #5a3a08;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .tipo-otros{background:var(--surface3);color:var(--text2);border:1px solid var(--border);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+/* CLASIFICACION badges */
+.cla-vigente{background:#0d2a1a;color:#3dba7a;border:1px solid #1a4a2a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.cla-dicom{background:#2a1515;color:#e05555;border:1px solid #5a2020;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.cla-suspendido{background:#2a1e08;color:#e8a020;border:1px solid #4a3810;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.cla-otro{background:var(--surface3);color:var(--text2);border:1px solid var(--border);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
 .chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;user-select:none}
 .chip.all{background:var(--surface3);border-color:var(--border2);color:var(--text)}
 .chip.vencida{background:var(--red-bg);border-color:var(--red-dim);color:var(--red)}
@@ -165,10 +176,12 @@ tr.pvr td.npv{color:var(--blue)}
   </div>
   <div class="header-right">
     <span class="file-status" id="file-status">Sin archivo cargado</span>
+    <button class="btn sec" onclick="document.getElementById('frex').click()">+ Reporte REX+</button>
     <button class="btn sec" onclick="document.getElementById('fsql').click()">+ Consulta SQL</button>
     <button class="btn" onclick="document.getElementById('fcc').click()">+ Cuenta Corriente</button>
     <input type="file" id="fcc"  accept=".xls,.xlsx" onchange="handleCC(event)">
     <input type="file" id="fsql" accept=".xls,.xlsx" onchange="handleSQL(event)">
+    <input type="file" id="frex" accept=".xls,.xlsx" onchange="handleREX(event)">
   </div>
 </div>
 
@@ -192,9 +205,15 @@ tr.pvr td.npv{color:var(--blue)}
     </div>
     <div style="color:var(--text3);font-size:18px;margin-top:28px">+</div>
     <div class="file-box">
-      <div class="file-box-label">② Consulta SQL<br><span style="color:var(--text3)">Opcional — agrega producto y ejecutivo</span></div>
+      <div class="file-box-label">② Consulta SQL<br><span style="color:var(--text3)">Opcional — producto y ejecutivo</span></div>
       <button class="btn sec" onclick="document.getElementById('fsql').click()" style="font-size:11px;padding:5px 12px">Seleccionar archivo</button>
       <div class="file-box-status" id="sql-status">Sin cargar</div>
+    </div>
+    <div style="color:var(--text3);font-size:18px;margin-top:28px">+</div>
+    <div class="file-box">
+      <div class="file-box-label">③ Reporte Mensual REX+<br><span style="color:var(--text3)">Opcional — URLs de clientes REX+</span></div>
+      <button class="btn sec" onclick="document.getElementById('frex').click()" style="font-size:11px;padding:5px 12px">Seleccionar archivo</button>
+      <div class="file-box-status" id="rex-status">Sin cargar</div>
     </div>
   </div>
 
@@ -270,6 +289,19 @@ tr.pvr td.npv{color:var(--blue)}
         </div>
       </div>
     </div>
+    <div class="fg"><span class="flabel">Clasificación</span>
+      <div class="ms-wrap" id="ms-cla">
+        <div class="ms-trigger" id="ms-cla-trigger" onclick="toggleMs('cla')">Todos</div>
+        <div class="ms-dropdown" id="ms-cla-dd" style="display:none">
+          <div class="ms-search"><input type="text" placeholder="Buscar..." oninput="filterMsItems('cla',this.value)"></div>
+          <div class="ms-list" id="ms-cla-list"></div>
+          <div class="ms-actions">
+            <button class="ms-act-btn" onclick="selectAllMs('cla')">Seleccionar todo</button>
+            <button class="ms-act-btn" onclick="clearMs('cla')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="fsep"></div>
     <div class="fg" style="gap:4px">
       <span class="flabel">Estado</span>
@@ -281,6 +313,54 @@ tr.pvr td.npv{color:var(--blue)}
     <button class="btn-reset" onclick="resetFilters()">Limpiar</button>
     <button class="btn-reset" style="margin-left:auto" onclick="document.getElementById('fcc').click()">↺ Cambiar archivo</button>
     <button class="btn-dl" id="btn-dl" onclick="downloadExcel()" disabled>&#11015; Descargar Excel</button>
+    <div class="fsep"></div>
+    <div class="dias-wrap">
+      <span class="flabel" style="color:#9b7fe8">Corte ≥</span>
+      <input class="dias-input" type="number" id="dias-corte" value="10" min="1" max="999">
+      <span class="flabel" style="color:#9b7fe8">días</span>
+    </div>
+    <div class="dias-wrap">
+      <span class="flabel" style="color:#9b7fe8">Top</span>
+      <input class="dias-input" type="number" id="topn-input" value="20" min="1" max="9999" oninput="renderTopN()">
+      <span class="flabel" style="color:#9b7fe8">clientes</span>
+    </div>
+    <button class="btn-corte" id="btn-topn" onclick="toggleTopN()" disabled style="background:#1a2a1a;border-color:#2a5a2a;color:#3dba7a">⬆ Ver Top N</button>
+    <button class="btn-corte" id="btn-corte" onclick="exportarCorte()" disabled>✂ Exportar Cortes</button>
+  </div>
+
+  <!-- TOP N PANEL -->
+  <div id="topn-panel" style="display:none;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--surface)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 6px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;font-weight:600;color:#3dba7a;text-transform:uppercase;letter-spacing:.8px">▶ Top <span id="topn-label">20</span> clientes — Mayor DSO ponderado</span>
+        <span style="font-size:10px;color:var(--text3)" id="topn-sub">Vencido ≥ <span id="topn-dias-label">10</span> días · Excluye Mantención puro</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11px;font-family:'Courier New',monospace;color:var(--amber)" id="topn-total-ven">—</span>
+        <button onclick="toggleTopN()" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 4px">✕</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="padding:6px 10px;text-align:center;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);width:36px">#</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">RUT</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Cliente</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Clasificación</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Tipo</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Productos</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Ejecutivo</th>
+            <th style="padding:6px 10px;text-align:left;color:#4a9eff;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">URL REX+</th>
+            <th style="padding:6px 10px;text-align:right;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Monto Vencido</th>
+            <th style="padding:6px 10px;text-align:center;color:var(--amber);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);min-width:80px">DSO</th>
+            <th style="padding:6px 10px;text-align:center;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Días Máx.</th>
+          </tr>
+        </thead>
+        <tbody id="topn-tbody"></tbody>
+      </table>
+    </div>
+  </div>
   </div>
 
   <div class="body-flex">
@@ -293,10 +373,12 @@ tr.pvr td.npv{color:var(--blue)}
           <th onclick="sortBy('emi')" id="h-emi">Emisión</th>
           <th onclick="sortBy('vec')" id="h-vec">Vencimiento</th>
           <th onclick="sortBy('dv')"  id="h-dv" class="sorted">Días Venc. ↓</th>
+          <th onclick="sortBy('cla')" id="h-cla">Clasificación</th>
           <th>Origen</th>
           <th onclick="sortBy('pro')" id="h-pro">Producto</th>
           <th onclick="sortBy('tip')" id="h-tip">Tipo</th>
           <th onclick="sortBy('eje')" id="h-eje">Ejecutivo</th>
+          <th onclick="sortBy('rexUrl')" id="h-rex" style="color:#4a9eff">URL REX+</th>
           <th onclick="sortBy('sal')" id="h-sal" style="text-align:right">Saldo Total</th>
           <th onclick="sortBy('ven')" id="h-ven" style="text-align:right">Deuda Vencida</th>
           <th onclick="sortBy('pv2')" id="h-pv"  style="text-align:right">Por Vencer</th>
@@ -359,6 +441,14 @@ const CAT_PT   = new Set(['Factura Electrónica','REX+','Bnovus','GeoVictoria'])
 const CAT_MANT = new Set(['Flexline','Time']);
 const CAT_COMP = new Set(['Senegocia','Cobranza Web','Power BI','Venta Movil','Rindegastos']);
 
+function claBadge(c){
+  if(!c||c==='-') return `<span style="color:var(--text3);font-size:11px">—</span>`;
+  const cl = c.toLowerCase();
+  if(cl==='vigente')    return `<span class="cla-vigente">${c}</span>`;
+  if(cl==='dicom')      return `<span class="cla-dicom">${c}</span>`;
+  if(cl==='suspendido') return `<span class="cla-suspendido">${c}</span>`;
+  return `<span class="cla-otro">${c}</span>`;
+}
 function clasificarTipo(fam, sub){
   if(!sub || sub.trim()==='' || sub==='nan' || sub==='-') return 'Sin contrato';
 
@@ -454,7 +544,58 @@ function handleSQL(e){
   r.readAsArrayBuffer(f);
 }
 
-// ── CC file ───────────────────────────────────────────────────────────────
+// ── REX+ file ─────────────────────────────────────────────────────────────
+let rexMap = {}; // rut → [url1, url2, ...]
+
+function handleREX(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try{
+      const wb   = XLSX.read(ev.target.result, {type:'array'});
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:''});
+      rexMap = {};
+      rows.forEach(row => {
+        // Only take Canal = 'Manager'
+        const canal = String(row['Canal'] || '').trim();
+        if(canal !== 'Manager') return;
+
+        const url = String(row['Dominio'] || '').trim();
+        if(!url) return;
+        // Index by both Rut Contrato AND Rut empresa
+        const ruts = [
+          String(row['Rut Contrato']      || '').replace(/\./g,'').trim().toLowerCase(),
+          String(row['Rut empresa']        || '').replace(/\./g,'').trim().toLowerCase(),
+          String(row['Rut de facturación'] || '').replace(/\./g,'').trim().toLowerCase(),
+        ].filter(r => r && r !== 'nan' && r.length > 2);
+
+        ruts.forEach(rut => {
+          if(!rexMap[rut]) rexMap[rut] = new Set();
+          rexMap[rut].add(url);
+        });
+      });
+      // Convert Sets to sorted arrays
+      Object.keys(rexMap).forEach(k => { rexMap[k] = [...rexMap[k]].sort().join(', '); });
+      const total = Object.keys(rexMap).length;
+      const st = document.getElementById('rex-status');
+      st.textContent = '✓ ' + total + ' RUTs indexados (Canal Manager)';
+      st.className = 'file-box-status ok';
+      // Re-enrich if CC already loaded
+      if(DATA.length){ enrichREX(); applyFilters(); }
+    } catch(err){
+      document.getElementById('rex-status').textContent = 'Error: ' + err.message;
+    }
+  };
+  r.readAsArrayBuffer(f);
+}
+
+function enrichREX(){
+  if(!Object.keys(rexMap).length) return;
+  DATA.forEach(r => {
+    const normRut = r.rut.replace(/\./g,'').toLowerCase();
+    r.rexUrl = rexMap[normRut] || '';
+  });
+}
 function handleDrop(e){
   e.preventDefault();
   document.getElementById('drop-zone').classList.remove('drag');
@@ -488,13 +629,14 @@ function buildData(rows,fname){
     const emi=parseDate(r['FechaEmision']||r['Fecha Emision']||r['FechaEmisión']||r['fecha_emision']||'');
     const dv=diffDays(vec);
     const ori=getOri(r['Referencia']||r['referencia']||'');
+    const cla=String(r['Clasificación']||r['Clasificacion']||r['clasificacion']||'-').trim();
     DATA.push({
       rut,
       cli:String(r['ClienteProveedor']||r['Cliente']||r['cliente']||'').trim(),
       fac:parseInt(r['NumDocumento']||r['num_documento']||0)||0,
       emi, vec, dv,
       ori:ori.lbl, oriC:ori.cls,
-      pro:'-', tip:'-',
+      cla, pro:'-', tip:'-', rexUrl:'',
       eje:String(r['Cobrador']||r['cobrador']||'-').trim(),
       sal, ven:dv>0?sal:0, pv2:dv===0?sal:0
     });
@@ -510,35 +652,64 @@ function buildData(rows,fname){
   document.getElementById('upload-screen').style.display='none';
   document.getElementById('main-panel').style.display='flex';
   document.getElementById('btn-dl').disabled=false;
+  document.getElementById('btn-corte').disabled=false;
+  document.getElementById('btn-topn').disabled=false;
 }
 
 function enrich(){
-  if(!Object.keys(sqlMap).length) return;
-  DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam, m.sub); }});
+  if(Object.keys(sqlMap).length){
+    DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam, m.sub); }});
+  }
+  enrichREX();
 }
 
 // ── Multiselect state ─────────────────────────────────────────────────────
-const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()}, tip:{all:[],sel:new Set()} };
+const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()}, tip:{all:[],sel:new Set()}, cla:{all:[],sel:new Set()} };
 
 function toggleMs(k){
-  const dd=document.getElementById('ms-'+k+'-dd');
-  const isOpen=dd.style.display!=='none';
-  // close all first
-  ['eje','pro','ori','tip'].forEach(x=>{
+  const dd      = document.getElementById('ms-'+k+'-dd');
+  const trigger = document.getElementById('ms-'+k+'-trigger');
+  const isOpen  = dd.style.display !== 'none';
+
+  // Close all dropdowns first
+  ['eje','pro','ori','tip','cla'].forEach(x=>{
     document.getElementById('ms-'+x+'-dd').style.display='none';
     document.getElementById('ms-'+x+'-trigger').classList.remove('open');
   });
-  if(!isOpen){ dd.style.display='block'; document.getElementById('ms-'+k+'-trigger').classList.add('open'); }
+
+  if(!isOpen){
+    // Position dropdown using fixed coords from trigger's bounding rect
+    const rect = trigger.getBoundingClientRect();
+    dd.style.display = 'block';
+    dd.style.top     = (rect.bottom + 4) + 'px';
+    // Align left but keep within viewport
+    const left = Math.min(rect.left, window.innerWidth - 290);
+    dd.style.left    = Math.max(0, left) + 'px';
+    trigger.classList.add('open');
+  }
 }
 
 // Close dropdowns when clicking outside
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')){
-    ['eje','pro','ori','tip'].forEach(x=>{
+    ['eje','pro','ori','tip','cla'].forEach(x=>{
       document.getElementById('ms-'+x+'-dd').style.display='none';
       document.getElementById('ms-'+x+'-trigger').classList.remove('open');
     });
   }
+});
+// Close on scroll or resize
+window.addEventListener('scroll', ()=>{
+  ['eje','pro','ori','tip','cla'].forEach(x=>{
+    document.getElementById('ms-'+x+'-dd').style.display='none';
+    document.getElementById('ms-'+x+'-trigger').classList.remove('open');
+  });
+}, true);
+window.addEventListener('resize', ()=>{
+  ['eje','pro','ori','tip','cla'].forEach(x=>{
+    document.getElementById('ms-'+x+'-dd').style.display='none';
+    document.getElementById('ms-'+x+'-trigger').classList.remove('open');
+  });
 });
 
 function buildMsList(k, vals){
@@ -603,20 +774,23 @@ function fillSelects(){
   const pros=[...new Set(DATA.flatMap(r=>r.pro.split(',').map(p=>p.trim())))].filter(p=>p&&p!=='-').sort();
   const oris=[...new Set(DATA.map(r=>r.ori))].sort();
   const tips=[...new Set(DATA.map(r=>r.tip).filter(v=>v&&v!=='-'))].sort();
-  ['eje','pro','ori','tip'].forEach(k => {
-    const newAll = k==='eje'?ejes:k==='pro'?pros:k==='ori'?oris:tips;
+  const clas=[...new Set(DATA.map(r=>r.cla).filter(v=>v&&v!=='-'))].sort();
+  ['eje','pro','ori','tip','cla'].forEach(k => {
+    const newAll = k==='eje'?ejes:k==='pro'?pros:k==='ori'?oris:k==='tip'?tips:clas;
     MS[k].sel = new Set([...MS[k].sel].filter(v=>newAll.includes(v)));
   });
   buildMsList('eje', ejes); buildMsList('pro', pros);
   buildMsList('ori', oris); buildMsList('tip', tips);
+  buildMsList('cla', clas);
   updateMsTrigger('eje'); updateMsTrigger('pro');
   updateMsTrigger('ori'); updateMsTrigger('tip');
+  updateMsTrigger('cla');
 }
 
 // ── Filter & sort ─────────────────────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById('search').value||'').toLowerCase();
-  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel; const tips=MS.tip.sel;
+  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel; const tips=MS.tip.sel; const clas=MS.cla.sel;
   filtered=DATA.filter(r=>{
     if(q&&!r.rut.toLowerCase().includes(q)&&!r.cli.toLowerCase().includes(q)) return false;
     if(ejes.size&&!ejes.has(r.eje)) return false;
@@ -626,6 +800,7 @@ function applyFilters(){
     }
     if(oris.size&&!oris.has(r.ori)) return false;
     if(tips.size&&!tips.has(r.tip)) return false;
+    if(clas.size&&!clas.has(r.cla)) return false;
     if(estado==='vencida'&&r.dv===0) return false;
     if(estado==='pv'&&r.dv>0) return false;
     return true;
@@ -655,7 +830,7 @@ function sortBy(k){
     th.classList.remove('sorted');
     th.textContent=th.textContent.replace(/ [↑↓]$/,'');
   });
-  const map={rut:'h-rut',cli:'h-cli',fac:'h-fac',emi:'h-emi',vec:'h-vec',dv:'h-dv',pro:'h-pro',tip:'h-tip',eje:'h-eje',sal:'h-sal',ven:'h-ven',pv2:'h-pv'};
+  const map={rut:'h-rut',cli:'h-cli',fac:'h-fac',emi:'h-emi',vec:'h-vec',dv:'h-dv',cla:'h-cla',pro:'h-pro',tip:'h-tip',eje:'h-eje',rexUrl:'h-rex',sal:'h-sal',ven:'h-ven',pv2:'h-pv'};
   const th=document.getElementById(map[k]);
   if(th){th.classList.add('sorted');th.textContent+=sDir===1?' ↑':' ↓';}
   doSort(); render();
@@ -673,10 +848,12 @@ function render(){
       <td>${fmtD(r.emi)}</td>
       <td>${fmtD(r.vec)}</td>
       <td class="dvc">${dvPill(r.dv)}</td>
+      <td>${claBadge(r.cla)}</td>
       <td><span class="badge ${r.oriC}">${r.ori}</span></td>
       <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">${r.pro}</td>
       <td>${tipBadge(r.tip)}</td>
       <td style="color:var(--text2)">${r.eje}</td>
+      <td style="font-size:10px;font-family:'Courier New',monospace;color:#4a9eff;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${r.rexUrl||''}">${r.rexUrl||'—'}</td>
       <td class="num">${fmt(r.sal)}</td>
       <td class="num nven">${r.ven>0?fmt(r.ven):'—'}</td>
       <td class="num npv">${r.pv2>0?fmt(r.pv2):'—'}</td>
@@ -703,13 +880,15 @@ function updateKPIs(){
   document.getElementById('k-pv-s').textContent=pvr.length.toLocaleString('es-CL')+' facturas por vencer';
   document.getElementById('k-cli').textContent=cV.toLocaleString('es-CL');
   document.getElementById('k-cli-s').textContent=Math.round(cV/Math.max(cT,1)*100)+'% de la cartera';
+  // Auto-refresh Top N when filters change
+  if(topnVisible) renderTopN();
 }
 
 function changePage(d){ pg=Math.max(1,pg+d); render(); }
 function changePS(){ pSize=+document.getElementById('ps').value; pg=1; render(); }
 function resetFilters(){
   document.getElementById('search').value='';
-  ['eje','pro','ori','tip'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
+  ['eje','pro','ori','tip','cla'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
   estado='all'; setEstado('all');
 }
 
@@ -790,6 +969,241 @@ function downloadExcel(){
   XLSX.writeFile(wb, `Facturas${estTag}${proTag}${ejeTag}${tipTag}_${dateTag}.xlsx`);
 }
 
+// ── TOP N ─────────────────────────────────────────────────────────────────
+let topnVisible = false;
+
+function toggleTopN(){
+  topnVisible = !topnVisible;
+  document.getElementById('topn-panel').style.display = topnVisible ? 'block' : 'none';
+  document.getElementById('btn-topn').textContent = topnVisible ? '⬇ Ocultar Top N' : '⬆ Ver Top N';
+  if(topnVisible) renderTopN();
+}
+
+function buildCorteClientes(){
+  const minDias = parseInt(document.getElementById('dias-corte').value) || 10;
+  const candidatos = filtered.filter(r =>
+    r.dv >= minDias && r.ven > 0 &&
+    r.tip !== 'Mantención' && r.tip !== 'Sin contrato' && r.tip !== '-'
+  );
+  // Aggregate per client
+  const map = {};
+  candidatos.forEach(r => {
+    if(!map[r.rut]) map[r.rut] = {
+      rut:r.rut, cli:r.cli, cla:r.cla, tip:r.tip,
+      pro:r.pro, eje:r.eje, ven:0, dvMax:0, dvWsum:0, rexUrl:r.rexUrl||''
+    };
+    const c = map[r.rut];
+    c.ven    += r.ven;
+    c.dvMax   = Math.max(c.dvMax, r.dv);
+    c.dvWsum += r.ven * r.dv;
+    // Take first non-empty rexUrl found across all invoices of this client
+    if(!c.rexUrl && r.rexUrl) c.rexUrl = r.rexUrl;
+  });
+  return Object.values(map).map(c => ({
+    ...c, dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
+  })).sort((a,b) => b.dso - a.dso);  // sort by DSO desc
+}
+
+function renderTopN(){
+  if(!topnVisible) return;
+  const n = parseInt(document.getElementById('topn-input').value) || 20;
+  const minDias = parseInt(document.getElementById('dias-corte').value) || 10;
+  document.getElementById('topn-label').textContent = n;
+  document.getElementById('topn-dias-label').textContent = minDias;
+
+  const allClientes = buildCorteClientes();
+  const topClientes = allClientes.slice(0, n);
+  const totalVen = topClientes.reduce((s,c) => s + c.ven, 0);
+  document.getElementById('topn-total-ven').textContent =
+    `${topClientes.length} clientes · $${Math.round(totalVen).toLocaleString('es-CL')} vencido`;
+
+  const dsoMax = topClientes.length ? topClientes[0].dso : 1;
+
+  const tbody = document.getElementById('topn-tbody');
+  tbody.innerHTML = topClientes.map((c, i) => {
+    const rank = i + 1;
+    // DSO bar width
+    const barW = Math.round((c.dso / Math.max(dsoMax, 1)) * 100);
+    const dsoColor = c.dso > 90 ? 'var(--red)' : c.dso > 30 ? 'var(--amber)' : 'var(--green)';
+    const rankColor = rank <= 3 ? 'var(--red)' : rank <= 10 ? 'var(--amber)' : 'var(--text2)';
+    return `<tr style="border-bottom:1px solid var(--border);transition:background .08s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <td style="padding:6px 10px;text-align:center;font-family:'Courier New',monospace;font-weight:700;color:${rankColor}">${rank}</td>
+      <td style="padding:6px 10px;font-family:'Courier New',monospace;font-size:10px;color:var(--text2)">${c.rut}</td>
+      <td style="padding:6px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${c.cli}</td>
+      <td style="padding:6px 10px">${claBadge(c.cla)}</td>
+      <td style="padding:6px 10px">${tipBadge(c.tip)}</td>
+      <td style="padding:6px 10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);font-size:10px">${c.pro}</td>
+      <td style="padding:6px 10px;color:var(--text2);font-size:10px">${c.eje}</td>
+      <td style="padding:6px 10px;font-size:10px;font-family:'Courier New',monospace;color:#4a9eff;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.rexUrl||''}">${c.rexUrl||'—'}</td>
+      <td style="padding:6px 10px;text-align:right;font-family:'Courier New',monospace;font-weight:600;color:var(--red)">$${Math.round(c.ven).toLocaleString('es-CL')}</td>
+      <td style="padding:6px 14px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:6px;background:var(--surface3);border-radius:3px;min-width:50px">
+            <div style="width:${barW}%;height:100%;background:${dsoColor};border-radius:3px;transition:width .3s"></div>
+          </div>
+          <span style="font-family:'Courier New',monospace;font-weight:700;color:${dsoColor};min-width:40px;text-align:right">${c.dso}d</span>
+        </div>
+      </td>
+      <td style="padding:6px 10px;text-align:center;font-family:'Courier New',monospace;color:var(--text2)">${c.dvMax}d</td>
+    </tr>`;
+  }).join('');
+}
+
+// Re-render Top N whenever filters change
+const _origApply = applyFilters;
+// Hook into render cycle via updateKPIs
+
+function exportarCorte(){
+  const minDias = parseInt(document.getElementById('dias-corte').value) || 10;
+  const now     = new Date();
+  const dateStr = now.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const dateTag = now.toISOString().slice(0,10).replace(/-/g,'');
+
+  // 1. Filter from currently visible (filtered) data — respects all active panel filters
+  //    Additional corte rules: vencidas >= minDias AND not purely Mantención
+  const candidatos = filtered.filter(r =>
+    r.dv >= minDias &&
+    r.ven > 0 &&
+    r.tip !== 'Mantención' &&
+    r.tip !== 'Sin contrato' &&
+    r.tip !== '-'
+  );
+
+  if(!candidatos.length){
+    alert(`No hay clientes con deuda vencida ≥ ${minDias} días que apliquen para corte.`);
+    return;
+  }
+
+  // 2. Aggregate by RUT — one row per client with totals and DSO
+  const clientMap = {};
+  candidatos.forEach(r => {
+    if(!clientMap[r.rut]){
+      clientMap[r.rut] = {
+        rut: r.rut, cli: r.cli, eje: r.eje, tip: r.tip, cla: r.cla,
+        pro: r.pro, ven: 0, dvMax: 0, dvWsum: 0, rexUrl: r.rexUrl||''
+      };
+    }
+    // Update rexUrl if current record has one and stored doesn't
+    if(!clientMap[r.rut].rexUrl && r.rexUrl) clientMap[r.rut].rexUrl = r.rexUrl;
+    const c = clientMap[r.rut];
+    c.ven    += r.ven;
+    c.dvMax   = Math.max(c.dvMax, r.dv);
+    c.dvWsum += r.ven * r.dv;
+  });
+
+  const clientes = Object.values(clientMap).map(c => ({
+    ...c,
+    dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
+  })).sort((a,b) => b.ven - a.ven);
+
+  // 3. Get unique products (excluding Mantención-only ones)
+  const PRODUCTS_CORTE = ['Bnovus','Factura Electrónica','Flexline','GeoVictoria','Manager+','REX+','Time'];
+
+  // 4. Product map: which clients have each product
+  const prodClientMap = {};
+  PRODUCTS_CORTE.forEach(p => { prodClientMap[p] = []; });
+
+  clientes.forEach(c => {
+    const prods = c.pro.split(',').map(x => x.trim());
+    prods.forEach(p => {
+      if(prodClientMap[p]) prodClientMap[p].push(c);
+    });
+  });
+
+  const wb   = XLSX.utils.book_new();
+  const HDR  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx. Vencido'];
+  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:16}];
+
+  // ── SHEET 0: Top N por DSO ─────────────────────────────────────────────
+  const n = parseInt(document.getElementById('topn-input').value) || 20;
+  const allClientes = buildCorteClientes();
+  const topClientes = allClientes.slice(0, n);
+  const topVen = topClientes.reduce((s,c)=>s+c.ven,0);
+
+  const topRows = topClientes.map((c,i) => [
+    i+1, c.rut, c.cli, c.pro, c.tip, c.cla, c.eje, c.ven, c.dso, c.dvMax
+  ]);
+  const topHDR = ['#','RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
+
+  // ── Rebuild prodClientMap FROM topClientes only ────────────────────────
+  const topProdClientMap = {};
+  PRODUCTS_CORTE.forEach(p => { topProdClientMap[p] = []; });
+  topClientes.forEach(c => {
+    const prods = c.pro.split(',').map(x => x.trim());
+    prods.forEach(p => {
+      if(topProdClientMap[p]) topProdClientMap[p].push(c);
+    });
+  });
+
+  const topSummary = [
+    [`TOP ${n} CLIENTES — MAYOR DSO PONDERADO — AL ${dateStr}`,'','','','','','','','','',''],
+    [`Clientes: ${topClientes.length}   |   Monto vencido: $${Math.round(topVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días · Excluye Mantención puro`,'','','','','','','','','',''],
+    [''],
+    topHDR,
+    ...topRows
+  ];
+  const wsTop = XLSX.utils.aoa_to_sheet(topSummary);
+  wsTop['!cols'] = [{wch:5},{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, wsTop, `Top ${n} por DSO`);
+
+  // ── SHEET 1: Todos los candidatos a corte (sin límite Top N) ──────────
+  const todosClientes = allClientes; // full list, not sliced
+  const todosVen = todosClientes.reduce((s,c)=>s+c.ven,0);
+  const rowsAll = todosClientes.map(c => [
+    c.rut, c.cli, c.pro, c.tip, c.cla, c.eje, c.ven, c.dso, c.dvMax
+  ]);
+
+  const summaryAll = [
+    [`TODOS LOS CANDIDATOS A CORTE — AL ${dateStr}`,'','','','','','','',''],
+    [`Clientes: ${todosClientes.length}   |   Monto vencido total: $${Math.round(todosVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días · Excluye Mantención puro`,'','','','','','','',''],
+    [''],
+    HDR,
+    ...rowsAll
+  ];
+
+  const wsAll = XLSX.utils.aoa_to_sheet(summaryAll);
+  wsAll['!cols'] = WCOL;
+  XLSX.utils.book_append_sheet(wb, wsAll, 'Todos los Cortes');
+
+  // ── SHEET per product — based on Top N only ───────────────────────────
+  PRODUCTS_CORTE.forEach(prod => {
+    const pClientes = topProdClientMap[prod];
+    if(!pClientes.length) return;
+
+    const isREX = prod === 'REX+';
+
+    // REX+ sheet gets URL column, others don't
+    const sheetHDR = isREX
+      ? ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','URL REX+','Monto Vencido','DSO (días)','Días Máx. Vencido']
+      : HDR;
+    const sheetCOL = isREX
+      ? [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:36},{wch:18},{wch:12},{wch:16}]
+      : WCOL;
+
+    const rows = pClientes.map(c => isREX
+      ? [c.rut, c.cli, c.pro, c.tip, c.cla, c.eje, c.rexUrl||'', c.ven, c.dso, c.dvMax]
+      : [c.rut, c.cli, c.pro, c.tip, c.cla, c.eje,               c.ven, c.dso, c.dvMax]
+    );
+
+    const totalVen = pClientes.reduce((s,c) => s+c.ven, 0);
+    const nCols    = sheetHDR.length;
+    const empty    = Array(nCols).fill('');
+
+    const data = [
+      [`SOLICITUD DE CORTE — ${prod.toUpperCase()} — AL ${dateStr}`, ...empty.slice(1)],
+      [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`, ...empty.slice(1)],
+      [''],
+      sheetHDR,
+      ...rows
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = sheetCOL;
+    XLSX.utils.book_append_sheet(wb, ws, prod.substring(0,31));
+  });
+
+  XLSX.writeFile(wb, `Solicitud_Corte_${dateTag}.xlsx`);
+}
 </script>
 </body>
 </html>

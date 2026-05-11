@@ -964,16 +964,39 @@ function exportarCorte(){
   wsTop['!cols'] = wcolTop;
   XLSX.utils.book_append_sheet(wb, wsTop, `Top ${nTop} por DSO`);
 
-  // ── SHEET 1: Todos los cortes (resumen general) ────────────────────────
+  // ── SHEET 1: Todos los clientes vencidos — sin ningún filtro extra ──
+  // Opera sobre DATA completo: cualquier día vencido, todas las clasificaciones
+  const candidatosAll = DATA.filter(r =>
+    r.dv > 0 &&
+    r.ven > 0
+  );
+  const clientMapAll = {};
+  candidatosAll.forEach(r => {
+    if(!clientMapAll[r.rut]){
+      clientMapAll[r.rut] = {
+        rut: r.rut, cli: r.cli, eje: r.eje, tip: r.tip, cla: r.cla||'',
+        pro: r.pro, ven: 0, dvMax: 0, dvWsum: 0
+      };
+    }
+    const c = clientMapAll[r.rut];
+    c.ven    += r.ven;
+    c.dvMax   = Math.max(c.dvMax, r.dv);
+    c.dvWsum += r.ven * r.dv;
+  });
+  const clientesAll = Object.values(clientMapAll).map(c => ({
+    ...c, dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
+  })).sort((a,b) => b.dso - a.dso);
+
   const hdrAll  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
   const wcolAll = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12}];
-  const rowsAll = clientes.map(c => [
+  const rowsAll = clientesAll.map(c => [
     c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax
   ]);
+  const totalAllVen = clientesAll.reduce((s,c) => s+c.ven, 0);
 
   const summaryAll = [
-    [`TODOS LOS CANDIDATOS A CORTE — AL ${dateStr}`,'','','','','','','',''],
-    [`Clientes: ${clientes.length}   |   Monto vencido total: $${Math.round(clientes.reduce((s,c)=>s+c.ven,0)).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido   |   Excluye: Mantención puro`,'','','','','','','',''],
+    [`TODOS LOS CLIENTES VENCIDOS — AL ${dateStr}`,'','','','','','','',''],
+    [`Clientes: ${clientesAll.length}   |   Monto vencido total: $${Math.round(totalAllVen).toLocaleString('es-CL')}   |   Incluye todas las clasificaciones, productos y orígenes`,'','','','','','','',''],
     [''],
     hdrAll,
     ...rowsAll

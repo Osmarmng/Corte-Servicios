@@ -896,7 +896,8 @@ function exportarCorte(){
   // 1. Filter: vencidas >= minDias AND tipo is NOT purely Mantención
   //    Pure Mantención = tipo === 'Mantención' only (no other categories)
   //    Clientes sin contrato SQL (Sin contrato / -) SÍ se incluyen
-  const candidatos = DATA.filter(r =>
+  // Usar 'filtered' para respetar los filtros activos del panel (incluyendo Clasificación)
+  const candidatos = filtered.filter(r =>
     r.dv >= minDias &&
     r.ven > 0 &&
     r.tip !== 'Mantención'
@@ -943,8 +944,8 @@ function exportarCorte(){
 
   const nTop  = parseInt(document.getElementById('top-n').value) || 100;
   const wb   = XLSX.utils.book_new();
-  const HDR  = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
-  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:22},{wch:18},{wch:12},{wch:12}];
+  const HDR  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
+  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12}];
 
   // ── SHEET 0: Top N por DSO ─────────────────────────────────────────────
   const topClientes = [...clientes].sort((a,b) => b.dso - a.dso).slice(0, nTop);
@@ -964,20 +965,22 @@ function exportarCorte(){
   XLSX.utils.book_append_sheet(wb, wsTop, `Top ${nTop} por DSO`);
 
   // ── SHEET 1: Todos los cortes (resumen general) ────────────────────────
+  const hdrAll  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
+  const wcolAll = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12}];
   const rowsAll = clientes.map(c => [
-    c.rut, c.cli, c.pro, c.tip, c.eje, c.ven, c.dso, c.dvMax
+    c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax
   ]);
 
   const summaryAll = [
-    [`TODOS LOS CANDIDATOS A CORTE — AL ${dateStr}`,'','','','','','',''],
-    [`Clientes: ${clientes.length}   |   Monto vencido total: $${Math.round(clientes.reduce((s,c)=>s+c.ven,0)).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido   |   Excluye: Mantención puro`,'','','','','','',''],
+    [`TODOS LOS CANDIDATOS A CORTE — AL ${dateStr}`,'','','','','','','',''],
+    [`Clientes: ${clientes.length}   |   Monto vencido total: $${Math.round(clientes.reduce((s,c)=>s+c.ven,0)).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido   |   Excluye: Mantención puro`,'','','','','','','',''],
     [''],
-    [...HDR,'Días Máx. Vencido','Clasificación'],
-    ...clientes.map(c=>[c.rut,c.cli,c.pro,c.tip,c.eje,c.ven,c.dso,c.dvMax,c.cla||''])
+    hdrAll,
+    ...rowsAll
   ];
 
   const wsAll = XLSX.utils.aoa_to_sheet(summaryAll);
-  wsAll['!cols'] = [...WCOL,{wch:18},{wch:14}];
+  wsAll['!cols'] = wcolAll;
   XLSX.utils.book_append_sheet(wb, wsAll, 'Todos los Cortes');
 
   // ── SHEET per product ──────────────────────────────────────────────────
@@ -1003,7 +1006,7 @@ function exportarCorte(){
       ws = XLSX.utils.aoa_to_sheet(data);
       ws['!cols'] = wcolRex;
     } else {
-      const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.eje, c.ven, c.dso, c.dvMax]);
+      const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax]);
       data = [
         [`SOLICITUD DE CORTE — ${prod.toUpperCase()} — AL ${dateStr}`,'','','','','','',''],
         [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','',''],

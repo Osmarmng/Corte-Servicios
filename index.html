@@ -1,5 +1,3 @@
-Copiar
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -21,7 +19,7 @@ Copiar
   --r:6px;
 }
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;font-size:13px}
- 
+
 /* HEADER */
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0}
 .header-left{display:flex;align-items:center;gap:10px}
@@ -35,7 +33,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .btn.sec{background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-weight:400}
 .btn.sec:hover{border-color:var(--text3)}
 input[type=file]{display:none}
- 
+
 /* UPLOAD SCREEN */
 #upload-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:40px}
 .upload-card{background:var(--surface);border:1.5px dashed var(--border2);border-radius:12px;padding:44px 52px;display:flex;flex-direction:column;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s,background .2s;max-width:500px;width:100%;text-align:center}
@@ -50,7 +48,7 @@ input[type=file]{display:none}
 .file-box-status.ok{color:var(--green)}
 .note{font-size:11px;color:var(--text3);line-height:1.7;max-width:480px;text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px}
 .note strong{color:var(--text2)}
- 
+
 /* KPIs */
 .kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);flex-shrink:0}
 .kpi{background:var(--surface);padding:13px 18px}
@@ -61,7 +59,7 @@ input[type=file]{display:none}
 .kpi.blue .kpi-value{color:var(--blue)}
 .kpi.amber .kpi-value{color:var(--amber)}
 .kpi.green .kpi-value{color:var(--green)}
- 
+
 /* FILTERS */
 .filters{background:var(--surface2);border-bottom:1px solid var(--border);padding:9px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}
 .filters input,.filters select{background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:var(--r);font-family:inherit;font-size:11px;outline:none}
@@ -81,7 +79,7 @@ input[type=file]{display:none}
 .dias-wrap{display:flex;align-items:center;gap:5px}
 .dias-input{background:var(--surface3);border:1px solid #5a2a8a;color:#c090ff;padding:4px 6px;border-radius:var(--r);font-size:11px;font-family:'Courier New',monospace;width:52px;text-align:center;outline:none}
 .dias-input:focus{border-color:#9b7fe8}
- 
+
 /* MULTISELECT */
 .ms-wrap{position:relative}
 .ms-trigger{background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:5px 28px 5px 8px;border-radius:var(--r);font-family:inherit;font-size:11px;cursor:pointer;min-width:120px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;user-select:none;transition:border .15s}
@@ -115,7 +113,7 @@ input[type=file]{display:none}
 .chip.vencida{background:var(--red-bg);border-color:var(--red-dim);color:var(--red)}
 .chip.pv{background:var(--blue-bg);border-color:#1a3a5a;color:var(--blue)}
 .chip.active{box-shadow:0 0 0 1px currentColor}
- 
+
 /* TABLE */
 .body-flex{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .table-wrap{overflow:auto;flex:1}
@@ -145,7 +143,7 @@ td.dvc{text-align:center}
 .pv180{background:var(--red-bg);color:var(--red)}
 tr.ven td.nven{color:var(--red)}
 tr.pvr td.npv{color:var(--blue)}
- 
+
 /* FOOTER */
 .footer{background:var(--surface);border-top:1px solid var(--border);padding:7px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .footer-info{font-size:11px;color:var(--text3)}
@@ -154,9 +152,9 @@ tr.pvr td.npv{color:var(--blue)}
 .pg-btn:hover:not(:disabled){border-color:var(--border2);color:var(--text)}
 .pg-btn:disabled{opacity:.3;cursor:default}
 .pg-info{font-size:11px;font-family:'Courier New',monospace;color:var(--text2);min-width:64px;text-align:center}
- 
+
 #main-panel{display:none;flex:1;overflow:hidden;flex-direction:column}
- 
+
 /* LOADING */
 .lov{position:fixed;inset:0;background:rgba(15,17,23,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100}
 .sp{width:34px;height:34px;border:3px solid var(--border2);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
@@ -165,7 +163,7 @@ tr.pvr td.npv{color:var(--blue)}
 </style>
 </head>
 <body>
- 
+
 <div class="header">
   <div class="header-left">
     <div class="dot"></div>
@@ -181,7 +179,7 @@ tr.pvr td.npv{color:var(--blue)}
     <input type="file" id="frex" accept=".xls,.xlsx" onchange="handleREX(event)">
   </div>
 </div>
- 
+
 <!-- UPLOAD SCREEN -->
 <div id="upload-screen">
   <div class="upload-card" id="drop-zone"
@@ -193,7 +191,7 @@ tr.pvr td.npv{color:var(--blue)}
     <div class="upload-title">Arrastra el archivo Excel aquí</div>
     <div class="upload-sub">o haz clic para seleccionarlo<br>Compatible con .xls y .xlsx</div>
   </div>
- 
+
   <div class="file-row">
     <div class="file-box">
       <div class="file-box-label">① Informe Cuenta Corriente<br><span style="color:var(--red);font-weight:600">Requerido</span></div>
@@ -213,7 +211,7 @@ tr.pvr td.npv{color:var(--blue)}
       <div class="file-box-status" id="rex-status">Sin cargar</div>
     </div>
   </div>
- 
+
   <div class="note">
     <strong>Columnas esperadas en el Informe de Cuenta Corriente:</strong><br>
     RUT · ClienteProveedor · NumDocumento · FechaEmision · FechaVencimiento · Saldo · Referencia · Cobrador<br><br>
@@ -223,7 +221,7 @@ tr.pvr td.npv{color:var(--blue)}
     Rut Contrato · Rut empresa · Rut de facturación · Dominio · Canal
   </div>
 </div>
- 
+
 <!-- MAIN PANEL -->
 <div id="main-panel">
   <div class="kpi-bar">
@@ -232,7 +230,7 @@ tr.pvr td.npv{color:var(--blue)}
     <div class="kpi blue">  <div class="kpi-label">Por Vencer</div>      <div class="kpi-value" id="k-pv">—</div> <div class="kpi-sub" id="k-pv-s">—</div></div>
     <div class="kpi amber"> <div class="kpi-label">Clientes con Mora</div><div class="kpi-value" id="k-cli">—</div><div class="kpi-sub" id="k-cli-s">—</div></div>
   </div>
- 
+
   <div class="filters">
     <div class="fg"><input type="text" id="search" placeholder="Buscar RUT o cliente..." oninput="applyFilters()"></div>
     <div class="fsep"></div>
@@ -287,6 +285,17 @@ tr.pvr td.npv{color:var(--blue)}
           </div>
         </div>
       </div>
+      <div class="ms-wrap" id="ms-cla">
+        <div class="ms-trigger" id="ms-cla-trigger" onclick="toggleMs('cla')">Todos</div>
+        <div class="ms-dropdown" id="ms-cla-dd" style="display:none">
+          <div class="ms-search"><input type="text" placeholder="Buscar..." oninput="filterMsItems('cla',this.value)"></div>
+          <div class="ms-list" id="ms-cla-list"></div>
+          <div class="ms-actions">
+            <button class="ms-act-btn" onclick="selectAllMs('cla')">Seleccionar todo</button>
+            <button class="ms-act-btn" onclick="clearMs('cla')">Limpiar</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="fsep"></div>
     <div class="fg" style="gap:4px">
@@ -312,7 +321,7 @@ tr.pvr td.npv{color:var(--blue)}
     </div>
     <button class="btn-corte" id="btn-corte" onclick="exportarCorte()" disabled>✂ Exportar Cortes</button>
   </div>
- 
+
   <div class="body-flex">
     <div class="table-wrap">
       <table>
@@ -336,7 +345,7 @@ tr.pvr td.npv{color:var(--blue)}
       </table>
     </div>
   </div>
- 
+
   <div class="footer">
     <span class="footer-info" id="fi">—</span>
     <div class="pag">
@@ -352,18 +361,18 @@ tr.pvr td.npv{color:var(--blue)}
     </div>
   </div>
 </div>
- 
+
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
 let DATA=[], filtered=[], sqlMap={}, rexMap={};
 let sKey='dv', sDir=-1, pg=1, pSize=50, estado='all';
- 
+
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
- 
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 const fmt  = n => n==0?'—':'$'+Math.round(n).toLocaleString('es-CL');
 const fmtK = n => n>=1e9?'$'+(n/1e9).toFixed(1)+'B':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(0)+'K':'$'+Math.round(n);
- 
+
 function parseDate(v){
   if(!v) return null;
   if(typeof v==='number'){
@@ -380,36 +389,36 @@ function parseDate(v){
   if(v instanceof Date) return v;
   return null;
 }
- 
+
 function fmtD(d){ return d?d.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'; }
 function diffDays(d){ if(!d) return 0; const ms=TODAY-d; return ms>0?Math.floor(ms/86400000):0; }
- 
+
 // ── Product category definitions ─────────────────────────────────────────
 const CAT_ASP  = new Set(['Time','Flexline','Manager+']);
 const CAT_PT   = new Set(['Factura Electrónica','REX+','Bnovus','GeoVictoria']);
 const CAT_MANT = new Set(['Flexline','Time']);
 const CAT_COMP = new Set(['Senegocia','Cobranza Web','Power BI','Venta Movil','Rindegastos']);
- 
+
 function clasificarTipo(fam, sub){
   if(!sub || sub.trim()==='' || sub==='nan' || sub==='-') return 'Sin contrato';
- 
+
   const prods  = new Set(sub.split(',').map(p => p.trim()));
   const famStr = fam || '';
- 
+
   const hasAspFam  = famStr.includes('ASP');
   const hasMantFam = famStr.includes('Mantención');
- 
+
   const hasAsp  = hasAspFam  && [...prods].some(p => CAT_ASP.has(p));
   const hasMant = hasMantFam && [...prods].some(p => CAT_MANT.has(p));
   const hasPT   = [...prods].some(p => CAT_PT.has(p));
   const hasComp = [...prods].some(p => CAT_COMP.has(p));
- 
+
   const cats = [];
   if(hasAsp)  cats.push('ASP');
   if(hasMant) cats.push('Mantención');
   if(hasPT)   cats.push('Productos Terceros');
   if(hasComp) cats.push('Complementarios');
- 
+
   if(!cats.length) return 'Sin contrato';
   return cats.join(' / ');
 }
@@ -439,14 +448,14 @@ function getOri(ref){
   if(r.startsWith('FAVE'))   return {lbl:'FAVE',cls:'bf'};
   return {lbl:r.substring(0,12),cls:'bo'};
 }
- 
+
 function dvPill(dv){
   if(dv===0)  return `<span class="pill pv0">Vigente</span>`;
   if(dv<=30)  return `<span class="pill pv30">${dv} días</span>`;
   if(dv<=90)  return `<span class="pill pv90">${dv} días</span>`;
   return `<span class="pill pv180">${dv} días</span>`;
 }
- 
+
 function spin(show,msg='Procesando...'){
   let el=document.getElementById('lov');
   if(show){
@@ -455,7 +464,7 @@ function spin(show,msg='Procesando...'){
       document.body.appendChild(el);}
   } else { if(el) el.remove(); }
 }
- 
+
 // ── SQL file ──────────────────────────────────────────────────────────────
 function handleSQL(e){
   const f=e.target.files[0]; if(!f) return;
@@ -485,7 +494,7 @@ function handleSQL(e){
   };
   r.readAsArrayBuffer(f);
 }
- 
+
 // ── REX+ file ────────────────────────────────────────────────────────────
 function handleREX(e){
   const f=e.target.files[0]; if(!f) return;
@@ -525,7 +534,7 @@ function handleREX(e){
   };
   rd.readAsArrayBuffer(f);
 }
- 
+
 // ── CC file ───────────────────────────────────────────────────────────────
 function handleDrop(e){
   e.preventDefault();
@@ -533,7 +542,7 @@ function handleDrop(e){
   const f=e.dataTransfer.files[0]; if(f) loadCC(f);
 }
 function handleCC(e){ const f=e.target.files[0]; if(f) loadCC(f); }
- 
+
 function loadCC(file){
   spin(true,'Leyendo archivo Excel...');
   setTimeout(()=>{
@@ -549,7 +558,7 @@ function loadCC(file){
     r.readAsArrayBuffer(file);
   },50);
 }
- 
+
 function buildData(rows,fname){
   DATA=[];
   rows.forEach(r=>{
@@ -584,14 +593,14 @@ function buildData(rows,fname){
   document.getElementById('btn-dl').disabled=false;
   document.getElementById('btn-corte').disabled=false;
 }
- 
+
 function enrich(){
   if(Object.keys(sqlMap).length){
     DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam, m.sub); if(m.cla) r.cla=m.cla; }});
   }
   enrichREX();
 }
- 
+
 function enrichREX(){
   if(!Object.keys(rexMap).length) return;
   const norm = r => String(r||'').replace(/\./g,'').trim().toLowerCase();
@@ -600,36 +609,36 @@ function enrichREX(){
     if(rexMap[key]) r.rexUrl = [...rexMap[key]].join(', ');
   });
 }
- 
+
 // ── Multiselect state ─────────────────────────────────────────────────────
-const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()}, tip:{all:[],sel:new Set()} };
- 
+const MS = { eje:{all:[],sel:new Set()}, pro:{all:[],sel:new Set()}, ori:{all:[],sel:new Set()}, tip:{all:[],sel:new Set()}, cla:{all:[],sel:new Set()} };
+
 function toggleMs(k){
   const dd=document.getElementById('ms-'+k+'-dd');
   const isOpen=dd.style.display!=='none';
   // close all first
-  ['eje','pro','ori','tip'].forEach(x=>{
+  ['eje','pro','ori','tip','cla'].forEach(x=>{
     document.getElementById('ms-'+x+'-dd').style.display='none';
     document.getElementById('ms-'+x+'-trigger').classList.remove('open');
   });
   if(!isOpen){ dd.style.display='block'; document.getElementById('ms-'+k+'-trigger').classList.add('open'); }
 }
- 
+
 // Close dropdowns when clicking outside
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')){
-    ['eje','pro','ori','tip'].forEach(x=>{
+    ['eje','pro','ori','tip','cla'].forEach(x=>{
       document.getElementById('ms-'+x+'-dd').style.display='none';
       document.getElementById('ms-'+x+'-trigger').classList.remove('open');
     });
   }
 });
- 
+
 function buildMsList(k, vals){
   MS[k].all = vals;
   renderMsList(k, '');
 }
- 
+
 function renderMsList(k, query){
   const list = document.getElementById('ms-'+k+'-list');
   const items = MS[k].all.filter(v => !query || v.toLowerCase().includes(query.toLowerCase()));
@@ -639,9 +648,9 @@ function renderMsList(k, query){
       ${v}
     </label>`).join('');
 }
- 
+
 function filterMsItems(k, q){ renderMsList(k, q); }
- 
+
 function toggleMsItem(k, v, checked){
   if(checked) MS[k].sel.add(v); else MS[k].sel.delete(v);
   updateMsTrigger(k);
@@ -649,7 +658,7 @@ function toggleMsItem(k, v, checked){
   renderMsList(k, si?si.value:'');
   applyFilters();
 }
- 
+
 function selectAllMs(k){
   MS[k].all.forEach(v => MS[k].sel.add(v));
   updateMsTrigger(k);
@@ -657,7 +666,7 @@ function selectAllMs(k){
   renderMsList(k, si?si.value:'');
   applyFilters();
 }
- 
+
 function clearMs(k){
   MS[k].sel.clear();
   updateMsTrigger(k);
@@ -665,7 +674,7 @@ function clearMs(k){
   renderMsList(k, si?si.value:'');
   applyFilters();
 }
- 
+
 function updateMsTrigger(k){
   const trigger = document.getElementById('ms-'+k+'-trigger');
   const n = MS[k].sel.size;
@@ -680,27 +689,28 @@ function updateMsTrigger(k){
     trigger.classList.add('has-selection');
   }
 }
- 
+
 // ── Fill filter dropdowns ─────────────────────────────────────────────────
 function fillSelects(){
   const ejes=[...new Set(DATA.map(r=>r.eje).filter(v=>v&&v!=='-'))].sort();
   const pros=[...new Set(DATA.flatMap(r=>r.pro.split(',').map(p=>p.trim())))].filter(p=>p&&p!=='-').sort();
   const oris=[...new Set(DATA.map(r=>r.ori))].sort();
   const tips=[...new Set(DATA.map(r=>r.tip).filter(v=>v&&v!=='-'))].sort();
-  ['eje','pro','ori','tip'].forEach(k => {
-    const newAll = k==='eje'?ejes:k==='pro'?pros:k==='ori'?oris:tips;
+  const clas=[...new Set(DATA.map(r=>r.cla).filter(v=>v&&v!=='-'))].sort();
+  ['eje','pro','ori','tip','cla'].forEach(k => {
+    const newAll = k==='eje'?ejes:k==='pro'?pros:k==='ori'?oris:k==='tip'?tips:clas;
     MS[k].sel = new Set([...MS[k].sel].filter(v=>newAll.includes(v)));
   });
   buildMsList('eje', ejes); buildMsList('pro', pros);
-  buildMsList('ori', oris); buildMsList('tip', tips);
+  buildMsList('ori', oris); buildMsList('tip', tips); buildMsList('cla', clas);
   updateMsTrigger('eje'); updateMsTrigger('pro');
-  updateMsTrigger('ori'); updateMsTrigger('tip');
+  updateMsTrigger('ori'); updateMsTrigger('tip'); updateMsTrigger('cla');
 }
- 
+
 // ── Filter & sort ─────────────────────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById('search').value||'').toLowerCase();
-  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel; const tips=MS.tip.sel;
+  const ejes=MS.eje.sel; const pros=MS.pro.sel; const oris=MS.ori.sel; const tips=MS.tip.sel; const clas=MS.cla.sel;
   filtered=DATA.filter(r=>{
     if(q&&!r.rut.toLowerCase().includes(q)&&!r.cli.toLowerCase().includes(q)) return false;
     if(ejes.size&&!ejes.has(r.eje)) return false;
@@ -710,20 +720,21 @@ function applyFilters(){
     }
     if(oris.size&&!oris.has(r.ori)) return false;
     if(tips.size&&!tips.has(r.tip)) return false;
+    if(clas.size&&!clas.has(r.cla)) return false;
     if(estado==='vencida'&&r.dv===0) return false;
     if(estado==='pv'&&r.dv>0) return false;
     return true;
   });
   doSort(); pg=1; updateKPIs(); render();
 }
- 
+
 function setEstado(e){
   estado=e;
   ['all','ven','pv'].forEach(x=>document.getElementById('c-'+x).classList.remove('active'));
   document.getElementById('c-'+(e==='all'?'all':e==='vencida'?'ven':'pv')).classList.add('active');
   applyFilters();
 }
- 
+
 function doSort(){
   filtered.sort((a,b)=>{
     let av=a[sKey], bv=b[sKey];
@@ -732,7 +743,7 @@ function doSort(){
     return sDir*((av||0)-(bv||0));
   });
 }
- 
+
 function sortBy(k){
   if(sKey===k) sDir*=-1; else{sKey=k;sDir=-1;}
   document.querySelectorAll('thead th').forEach(th=>{
@@ -744,7 +755,7 @@ function sortBy(k){
   if(th){th.classList.add('sorted');th.textContent+=sDir===1?' ↑':' ↓';}
   doSort(); render();
 }
- 
+
 // ── Render ────────────────────────────────────────────────────────────────
 function render(){
   const start=(pg-1)*pSize, rows=filtered.slice(start,start+pSize);
@@ -773,7 +784,7 @@ function render(){
   document.getElementById('pn').disabled=pg>=pages;
   document.getElementById('fi').textContent=`${total.toLocaleString('es-CL')} registros · mostrando ${rows.length}`;
 }
- 
+
 function updateKPIs(){
   const vr=filtered.filter(r=>r.dv>0), pvr=filtered.filter(r=>r.dv===0);
   const cV=new Set(vr.map(r=>r.rut)).size, cT=new Set(filtered.map(r=>r.rut)).size;
@@ -789,19 +800,19 @@ function updateKPIs(){
   document.getElementById('k-cli').textContent=cV.toLocaleString('es-CL');
   document.getElementById('k-cli-s').textContent=Math.round(cV/Math.max(cT,1)*100)+'% de la cartera';
 }
- 
+
 function changePage(d){ pg=Math.max(1,pg+d); render(); }
 function changePS(){ pSize=+document.getElementById('ps').value; pg=1; render(); }
 function resetFilters(){
   document.getElementById('search').value='';
-  ['eje','pro','ori','tip'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
+  ['eje','pro','ori','tip','cla'].forEach(k=>{ MS[k].sel.clear(); updateMsTrigger(k); renderMsList(k,''); });
   estado='all'; setEstado('all');
 }
- 
+
 // ── Download filtered data as Excel ──────────────────────────────────────
 function downloadExcel(){
   if(!filtered.length) return;
- 
+
   const ejeLabel = MS.eje.sel.size===0?'Todos':[...MS.eje.sel].join(', ');
   const proLabel = MS.pro.sel.size===0?'Todos':[...MS.pro.sel].join(', ');
   const oriLabel = MS.ori.sel.size===0?'Todos':[...MS.ori.sel].join(', ');
@@ -810,14 +821,14 @@ function downloadExcel(){
   const now  = new Date();
   const dateStr = now.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
   const timeStr = now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
- 
+
   const tipLabel = MS.tip.sel.size===0?'Todos':[...MS.tip.sel].join(', ');
- 
+
   // Build rows
   const headers = ['RUT','Cliente','N° Factura','Fecha Emisión','Fecha Vencimiento',
                    'Días Vencidos','Origen','Producto','Tipo','Ejecutivo',
                    'Saldo Total','Deuda Vencida','Por Vencer'];
- 
+
   const rows = filtered.map(r => [
     r.rut, r.cli, r.fac||'',
     r.emi ? fmtD(r.emi) : '',
@@ -825,14 +836,14 @@ function downloadExcel(){
     r.dv, r.ori, r.pro, r.tip, r.eje,
     r.sal, r.ven, r.pv2
   ]);
- 
+
   // Summary block at top
   const tSal = filtered.reduce((s,r)=>s+r.sal,0);
   const tVen = filtered.reduce((s,r)=>s+r.ven,0);
   const tPv  = filtered.reduce((s,r)=>s+r.pv2,0);
   const cliVen = new Set(filtered.filter(r=>r.dv>0).map(r=>r.rut)).size;
   const cliTot = new Set(filtered.map(r=>r.rut)).size;
- 
+
   const summary = [
     ['REPORTE DE FACTURAS PENDIENTES','','','','','','','','','','','',''],
     ['Generado:',dateStr+' '+timeStr,'','','','','','','','','','',''],
@@ -850,19 +861,19 @@ function downloadExcel(){
     headers,
     ...rows
   ];
- 
+
   const ws = XLSX.utils.aoa_to_sheet(summary);
- 
+
   // Column widths
   ws['!cols'] = [
     {wch:14},{wch:40},{wch:13},{wch:14},{wch:16},
     {wch:12},{wch:18},{wch:34},{wch:18},{wch:22},
     {wch:16},{wch:16},{wch:16}
   ];
- 
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Facturas Pendientes');
- 
+
   const safePro = proLabel==='Todos'?'':proLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,12);
   const safeEje = ejeLabel==='Todos'?'':ejeLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,10);
   const safeTip = tipLabel==='Todos'?'':tipLabel.replace(/[^a-zA-Z0-9]/g,'').substring(0,8);
@@ -871,17 +882,17 @@ function downloadExcel(){
   const ejeTag  = safeEje?('_'+safeEje):'';
   const tipTag  = safeTip?('_'+safeTip):'';
   const dateTag = now.toISOString().slice(0,10).replace(/-/g,'');
- 
+
   XLSX.writeFile(wb, `Facturas${estTag}${proTag}${ejeTag}${tipTag}_${dateTag}.xlsx`);
 }
- 
+
 // ── EXPORTAR CORTES ───────────────────────────────────────────────────────
 function exportarCorte(){
   const minDias = parseInt(document.getElementById('dias-corte').value) || 10;
   const now     = new Date();
   const dateStr = now.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
   const dateTag = now.toISOString().slice(0,10).replace(/-/g,'');
- 
+
   // 1. Filter: vencidas >= minDias AND tipo is NOT purely Mantención
   //    Pure Mantención = tipo === 'Mantención' only (no other categories)
   //    Clientes sin contrato SQL (Sin contrato / -) SÍ se incluyen
@@ -890,12 +901,12 @@ function exportarCorte(){
     r.ven > 0 &&
     r.tip !== 'Mantención'
   );
- 
+
   if(!candidatos.length){
     alert(`No hay clientes con deuda vencida ≥ ${minDias} días que apliquen para corte.`);
     return;
   }
- 
+
   // 2. Aggregate by RUT — one row per client with totals and DSO
   const clientMap = {};
   candidatos.forEach(r => {
@@ -910,31 +921,31 @@ function exportarCorte(){
     c.dvMax   = Math.max(c.dvMax, r.dv);
     c.dvWsum += r.ven * r.dv;
   });
- 
+
   const clientes = Object.values(clientMap).map(c => ({
     ...c,
     dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
   })).sort((a,b) => b.ven - a.ven);
- 
+
   // 3. Get unique products (excluding Mantención-only ones)
   const PRODUCTS_CORTE = ['Bnovus','Factura Electrónica','Flexline','GeoVictoria','Manager+','REX+','Time'];
- 
+
   // 4. Product map: which clients have each product
   const prodClientMap = {};
   PRODUCTS_CORTE.forEach(p => { prodClientMap[p] = []; });
- 
+
   clientes.forEach(c => {
     const prods = c.pro.split(',').map(x => x.trim());
     prods.forEach(p => {
       if(prodClientMap[p]) prodClientMap[p].push(c);
     });
   });
- 
+
   const nTop  = parseInt(document.getElementById('top-n').value) || 100;
   const wb   = XLSX.utils.book_new();
   const HDR  = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
   const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:22},{wch:18},{wch:12},{wch:12}];
- 
+
   // ── SHEET 0: Top N por DSO ─────────────────────────────────────────────
   const topClientes = [...clientes].sort((a,b) => b.dso - a.dso).slice(0, nTop);
   const totalTopVen = topClientes.reduce((s,c) => s+c.ven, 0);
@@ -951,12 +962,12 @@ function exportarCorte(){
   const wsTop = XLSX.utils.aoa_to_sheet(summTop);
   wsTop['!cols'] = wcolTop;
   XLSX.utils.book_append_sheet(wb, wsTop, `Top ${nTop} por DSO`);
- 
+
   // ── SHEET 1: Todos los cortes (resumen general) ────────────────────────
   const rowsAll = clientes.map(c => [
     c.rut, c.cli, c.pro, c.tip, c.eje, c.ven, c.dso, c.dvMax
   ]);
- 
+
   const summaryAll = [
     [`TODOS LOS CANDIDATOS A CORTE — AL ${dateStr}`,'','','','','','',''],
     [`Clientes: ${clientes.length}   |   Monto vencido total: $${Math.round(clientes.reduce((s,c)=>s+c.ven,0)).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido   |   Excluye: Mantención puro`,'','','','','','',''],
@@ -964,19 +975,19 @@ function exportarCorte(){
     [...HDR,'Días Máx. Vencido','Clasificación'],
     ...clientes.map(c=>[c.rut,c.cli,c.pro,c.tip,c.eje,c.ven,c.dso,c.dvMax,c.cla||''])
   ];
- 
+
   const wsAll = XLSX.utils.aoa_to_sheet(summaryAll);
   wsAll['!cols'] = [...WCOL,{wch:18},{wch:14}];
   XLSX.utils.book_append_sheet(wb, wsAll, 'Todos los Cortes');
- 
+
   // ── SHEET per product ──────────────────────────────────────────────────
   PRODUCTS_CORTE.forEach(prod => {
     const pClientes = prodClientMap[prod];
     if(!pClientes.length) return;
- 
+
     const totalVen = pClientes.reduce((s,c) => s+c.ven, 0);
     let data, ws;
- 
+
     if(prod === 'REX+'){
       // Hoja REX+: incluye columna URL REX+
       const hdrRex = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','URL REX+','Monto Vencido','DSO (días)','Días Máx.'];
@@ -1005,7 +1016,7 @@ function exportarCorte(){
     }
     XLSX.utils.book_append_sheet(wb, ws, prod.substring(0,31));
   });
- 
+
   XLSX.writeFile(wb, `Solicitud_Corte_${dateTag}.xlsx`);
 }
 </script>

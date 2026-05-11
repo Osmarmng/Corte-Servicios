@@ -943,16 +943,17 @@ function exportarCorte(){
   });
 
   const nTop  = parseInt(document.getElementById('top-n').value) || 100;
+  const semaforo = d => d > 180 ? '🔴 CRÍTICO >180d' : d > 90 ? '🟠 ALTO 91-180d' : d > 60 ? '🟡 MEDIO 61-90d' : d > 30 ? '🟢 BAJO 31-60d' : '⚪ RECIENTE ≤30d';
   const wb   = XLSX.utils.book_new();
   const HDR  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
-  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12}];
+  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
 
   // ── SHEET 0: Top N por DSO ─────────────────────────────────────────────
   const topClientes = [...clientes].sort((a,b) => b.dso - a.dso).slice(0, nTop);
   const totalTopVen = topClientes.reduce((s,c) => s+c.ven, 0);
-  const hdrTop = ['#','RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
-  const wcolTop = [{wch:5},{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12}];
-  const rowsTop = topClientes.map((c,i) => [i+1, c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax]);
+  const hdrTop = ['#','RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
+  const wcolTop = [{wch:5},{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
+  const rowsTop = topClientes.map((c,i) => [i+1, c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
   const summTop = [
     [`TOP ${nTop} CLIENTES — MAYOR DSO PONDERADO — AL ${dateStr}`,'','','','','','','','',''],
     [`Clientes: ${topClientes.length}   |   Monto vencido: $${Math.round(totalTopVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días · Excluye Mantención puro`,'','','','','','','','',''],
@@ -987,16 +988,16 @@ function exportarCorte(){
     ...c, dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
   })).sort((a,b) => b.dso - a.dso);
 
-  const hdrAll  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
-  const wcolAll = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12}];
+  const hdrAll  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
+  const wcolAll = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
   const rowsAll = clientesAll.map(c => [
-    c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax
+    c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)
   ]);
   const totalAllVen = clientesAll.reduce((s,c) => s+c.ven, 0);
 
   const summaryAll = [
-    [`TODOS LOS CLIENTES VENCIDOS — AL ${dateStr}`,'','','','','','','',''],
-    [`Clientes: ${clientesAll.length}   |   Monto vencido total: $${Math.round(totalAllVen).toLocaleString('es-CL')}   |   Incluye todas las clasificaciones, productos y orígenes`,'','','','','','','',''],
+    [`TODOS LOS CLIENTES VENCIDOS — AL ${dateStr}`,'','','','','','','','',''],
+    [`Clientes: ${clientesAll.length}   |   Monto vencido total: $${Math.round(totalAllVen).toLocaleString('es-CL')}   |   Incluye todas las clasificaciones, productos y orígenes`,'','','','','','','','',''],
     [''],
     hdrAll,
     ...rowsAll
@@ -1016,12 +1017,12 @@ function exportarCorte(){
 
     if(prod === 'REX+'){
       // Hoja REX+: incluye columna URL REX+
-      const hdrRex = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','URL REX+','Monto Vencido','DSO (días)','Días Máx.'];
-      const wcolRex = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:22},{wch:35},{wch:18},{wch:12},{wch:12}];
-      const rowsRex = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.eje, c.rexUrl||'—', c.ven, c.dso, c.dvMax]);
+      const hdrRex = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','URL REX+','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
+      const wcolRex = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:22},{wch:35},{wch:18},{wch:12},{wch:12},{wch:22}];
+      const rowsRex = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.eje, c.rexUrl||'—', c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
       data = [
-        [`SOLICITUD DE CORTE — REX+ — AL ${dateStr}`,'','','','','','','',''],
-        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','','',''],
+        [`SOLICITUD DE CORTE — REX+ — AL ${dateStr}`,'','','','','','','','',''],
+        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','','','',''],
         [''],
         hdrRex,
         ...rowsRex
@@ -1029,12 +1030,12 @@ function exportarCorte(){
       ws = XLSX.utils.aoa_to_sheet(data);
       ws['!cols'] = wcolRex;
     } else {
-      const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax]);
+      const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
       data = [
-        [`SOLICITUD DE CORTE — ${prod.toUpperCase()} — AL ${dateStr}`,'','','','','','',''],
-        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','',''],
+        [`SOLICITUD DE CORTE — ${prod.toUpperCase()} — AL ${dateStr}`,'','','','','','','',''],
+        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','','',''],
         [''],
-        HDR,
+        [...HDR,'Antigüedad'],
         ...rows
       ];
       ws = XLSX.utils.aoa_to_sheet(data);

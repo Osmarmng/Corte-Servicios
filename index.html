@@ -935,13 +935,6 @@ function exportarCorte(){
   const prodClientMap = {};
   PRODUCTS_CORTE.forEach(p => { prodClientMap[p] = []; });
 
-  clientes.forEach(c => {
-    const prods = c.pro.split(',').map(x => x.trim());
-    prods.forEach(p => {
-      if(prodClientMap[p]) prodClientMap[p].push(c);
-    });
-  });
-
   const nTop  = parseInt(document.getElementById('top-n').value) || 100;
   const semaforo = d => d > 180 ? '🔴 CRÍTICO >180d' : d > 90 ? '🟠 ALTO 91-180d' : d > 60 ? '🟡 MEDIO 61-90d' : d > 30 ? '🟢 BAJO 31-60d' : '⚪ RECIENTE ≤30d';
   const wb   = XLSX.utils.book_new();
@@ -951,6 +944,14 @@ function exportarCorte(){
   // ── SHEET 0: Top N por DSO ─────────────────────────────────────────────
   const topClientes = [...clientes].sort((a,b) => b.dso - a.dso).slice(0, nTop);
   const totalTopVen = topClientes.reduce((s,c) => s+c.ven, 0);
+
+  // Pestañas por servicio: SOLO clientes del Top N (mismo orden que el Top)
+  topClientes.forEach(c => {
+    const prods = c.pro.split(',').map(x => x.trim());
+    prods.forEach(p => {
+      if(prodClientMap[p]) prodClientMap[p].push(c);
+    });
+  });
   const hdrTop = ['#','RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
   const wcolTop = [{wch:5},{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
   const rowsTop = topClientes.map((c,i) => [i+1, c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
@@ -1022,7 +1023,7 @@ function exportarCorte(){
       const rowsRex = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.eje, c.rexUrl||'—', c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
       data = [
         [`SOLICITUD DE CORTE — REX+ — AL ${dateStr}`,'','','','','','','','',''],
-        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','','','',''],
+        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido · Solo clientes del Top ${nTop}`,'','','','','','','','',''],
         [''],
         hdrRex,
         ...rowsRex
@@ -1033,7 +1034,7 @@ function exportarCorte(){
       const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
       data = [
         [`SOLICITUD DE CORTE — ${prod.toUpperCase()} — AL ${dateStr}`,'','','','','','','',''],
-        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido`,'','','','','','','',''],
+        [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido · Solo clientes del Top ${nTop}`,'','','','','','','',''],
         [''],
         [...HDR,'Antigüedad'],
         ...rows

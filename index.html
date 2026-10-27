@@ -285,6 +285,8 @@ tr.pvr td.npv{color:var(--blue)}
           </div>
         </div>
       </div>
+    </div>
+    <div class="fg"><span class="flabel">Clasificación</span>
       <div class="ms-wrap" id="ms-cla">
         <div class="ms-trigger" id="ms-cla-trigger" onclick="toggleMs('cla')">Todos</div>
         <div class="ms-dropdown" id="ms-cla-dd" style="display:none">
@@ -421,6 +423,27 @@ function clasificarTipo(fam, sub){
 
   if(!cats.length) return 'Sin contrato';
   return cats.join(' / ');
+}
+
+// ── Servicios cortables / no cortables por cliente ──────────────────────
+// NO cortables: Factura Electrónica (DTE) y Flexline/Time con contrato de Mantención.
+// Todo lo demás (Manager+, Flexline/Time ASP, REX+, Bnovus, GeoVictoria, Complementarios) SÍ se corta.
+function servCorte(fam, sub){
+  const prods = (sub||'').split(',').map(p=>p.trim()).filter(p=>p && p!=='-' && p!=='nan');
+  if(!prods.length) return {cort:[], noCort:[], sinContrato:true, nota:''};
+  const famS    = new Set((fam||'').split(',').map(p=>p.trim()));
+  const hasMant = famS.has('Mantención'), hasAsp = famS.has('ASP');
+  const ft      = prods.filter(p => CAT_MANT.has(p));
+  const otros   = prods.filter(p => !CAT_MANT.has(p) && p!=='Factura Electrónica');
+  const cort = [...otros], noCort = [];
+  let nota = '';
+  if(prods.includes('Factura Electrónica')) noCort.push('Factura Electrónica (DTE)');
+  if(ft.length){
+    if(!hasMant)                   cort.push(...ft);
+    else if(!hasAsp || otros.length) ft.forEach(p => noCort.push(p+' (Mantención)'));
+    else { cort.push(...ft); nota = 'Contrato ASP y Mantención sobre '+ft.join('/')+' — verificar'; }
+  }
+  return {cort, noCort, sinContrato:false, nota};
 }
 function tipBadge(t){
   if(!t||t==='-'||t==='Sin contrato') return `<span style="color:var(--text3);font-size:11px">—</span>`;
@@ -596,7 +619,7 @@ function buildData(rows,fname){
 
 function enrich(){
   if(Object.keys(sqlMap).length){
-    DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam, m.sub); if(m.cla) r.cla=m.cla; }});
+    DATA.forEach(r=>{ const m=sqlMap[r.rut]; if(m){ r.pro=m.pro||'-'; r.eje=m.eje||r.eje; r.tip=clasificarTipo(m.fam, m.sub); r.sc=servCorte(m.fam, m.sub); if(m.cla) r.cla=m.cla; }});
   }
   enrichREX();
 }
@@ -893,15 +916,16 @@ function exportarCorte(){
   const dateStr = now.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'});
   const dateTag = now.toISOString().slice(0,10).replace(/-/g,'');
 
-  // 1. Filter: vencidas >= minDias AND tipo is NOT purely Mantención
-  //    Pure Mantención = tipo === 'Mantención' only (no other categories)
-  //    Clientes sin contrato SQL (Sin contrato / -) SÍ se incluyen
+  // 1. Filter: vencidas >= minDias AND cliente con al menos un servicio cortable
+  //    Quedan FUERA: solo DTE, solo Flexline/Time en Mantención, o combinación de ambos
+  //    Clientes sin contrato SQL SÍ se incluyen
   // Usar 'filtered' para respetar los filtros activos del panel (incluyendo Clasificación)
-  const candidatos = filtered.filter(r =>
-    r.dv >= minDias &&
-    r.ven > 0 &&
-    r.tip !== 'Mantención'
-  );
+  const SC0 = {cort:[], noCort:[], sinContrato:true, nota:''};
+  const scOf = r => r.sc || SC0;
+  const esCortable = r => { const s = scOf(r); return s.sinContrato || s.cort.length > 0; };
+  const vencidosMin = filtered.filter(r => r.dv >= minDias && r.ven > 0);
+  const candidatos  = vencidosMin.filter(esCortable);
+  const excluidosR  = vencidosMin.filter(r => !esCortable(r));
 
   if(!candidatos.length){
     alert(`No hay clientes con deuda vencida ≥ ${minDias} días que apliquen para corte.`);
@@ -914,7 +938,7 @@ function exportarCorte(){
     if(!clientMap[r.rut]){
       clientMap[r.rut] = {
         rut: r.rut, cli: r.cli, eje: r.eje, tip: r.tip, cla: r.cla||'',
-        pro: r.pro, rexUrl: r.rexUrl||'', ven: 0, dvMax: 0, dvWsum: 0
+        pro: r.pro, rexUrl: r.rexUrl||'', sc: scOf(r), ven: 0, dvMax: 0, dvWsum: 0
       };
     }
     const c = clientMap[r.rut];
@@ -928,8 +952,10 @@ function exportarCorte(){
     dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
   })).sort((a,b) => b.ven - a.ven);
 
-  // 3. Get unique products (excluding Mantención-only ones)
-  const PRODUCTS_CORTE = ['Bnovus','Factura Electrónica','Flexline','GeoVictoria','Manager+','REX+','Time'];
+  // 3. Productos cortables (DTE nunca se corta → sin pestaña). Otros cortables van a "Otros"
+  const PRODUCTS_CORTE = ['Bnovus','Flexline','GeoVictoria','Manager+','REX+','Time','Otros'];
+  const txtCort = s => s.sinContrato ? 'Sin contrato SQL' : s.cort.join(', ');
+  const txtNo   = s => s.noCort.length ? s.noCort.join(', ') : '—';
 
   // 4. Product map: which clients have each product
   const prodClientMap = {};
@@ -939,25 +965,24 @@ function exportarCorte(){
   const semaforo = d => d > 180 ? '🔴 CRÍTICO >180d' : d > 90 ? '🟠 ALTO 91-180d' : d > 60 ? '🟡 MEDIO 61-90d' : d > 30 ? '🟢 BAJO 31-60d' : '⚪ RECIENTE ≤30d';
   const wb   = XLSX.utils.book_new();
   const HDR  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.'];
-  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
+  const WCOL = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22},{wch:34},{wch:40}];
 
   // ── SHEET 0: Top N por DSO ─────────────────────────────────────────────
   const topClientes = [...clientes].sort((a,b) => b.dso - a.dso).slice(0, nTop);
   const totalTopVen = topClientes.reduce((s,c) => s+c.ven, 0);
 
   // Pestañas por servicio: SOLO clientes del Top N (mismo orden que el Top)
+  // Solo servicios CORTABLES del cliente (no DTE ni Flexline/Time en Mantención)
   topClientes.forEach(c => {
-    const prods = c.pro.split(',').map(x => x.trim());
-    prods.forEach(p => {
-      if(prodClientMap[p]) prodClientMap[p].push(c);
-    });
+    const destinos = new Set(c.sc.cort.map(p => prodClientMap[p] ? p : 'Otros'));
+    destinos.forEach(p => prodClientMap[p].push(c));
   });
-  const hdrTop = ['#','RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
-  const wcolTop = [{wch:5},{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
-  const rowsTop = topClientes.map((c,i) => [i+1, c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
+  const hdrTop = ['#','RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad','Servicios a cortar','NO cortar (DTE / Mantención)','Observación'];
+  const wcolTop = [{wch:5},{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22},{wch:34},{wch:40},{wch:40}];
+  const rowsTop = topClientes.map((c,i) => [i+1, c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax), txtCort(c.sc), txtNo(c.sc), c.sc.nota||'']);
   const summTop = [
     [`TOP ${nTop} CLIENTES — MAYOR DSO PONDERADO — AL ${dateStr}`,'','','','','','','','',''],
-    [`Clientes: ${topClientes.length}   |   Monto vencido: $${Math.round(totalTopVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días · Excluye Mantención puro`,'','','','','','','','',''],
+    [`Clientes: ${topClientes.length}   |   Monto vencido: $${Math.round(totalTopVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días · Excluye clientes solo DTE y/o Flexline-Time en Mantención (${new Set(excluidosR.map(r=>r.rut)).size} clientes fuera)`,'','','','','','','','',''],
     [''],
     hdrTop,
     ...rowsTop
@@ -977,7 +1002,7 @@ function exportarCorte(){
     if(!clientMapAll[r.rut]){
       clientMapAll[r.rut] = {
         rut: r.rut, cli: r.cli, eje: r.eje, tip: r.tip, cla: r.cla||'',
-        pro: r.pro, ven: 0, dvMax: 0, dvWsum: 0
+        pro: r.pro, sc: scOf(r), ven: 0, dvMax: 0, dvWsum: 0
       };
     }
     const c = clientMapAll[r.rut];
@@ -989,10 +1014,11 @@ function exportarCorte(){
     ...c, dso: Math.round(c.dvWsum / Math.max(c.ven, 1))
   })).sort((a,b) => b.dso - a.dso);
 
-  const hdrAll  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
-  const wcolAll = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22}];
+  const hdrAll  = ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad','¿Aplica corte?','Servicios a cortar','NO cortar (DTE / Mantención)'];
+  const wcolAll = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22},{wch:14},{wch:34},{wch:40}];
   const rowsAll = clientesAll.map(c => [
-    c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)
+    c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax),
+    (c.sc.sinContrato || c.sc.cort.length) ? 'Sí' : 'No', txtCort(c.sc), txtNo(c.sc)
   ]);
   const totalAllVen = clientesAll.reduce((s,c) => s+c.ven, 0);
 
@@ -1008,6 +1034,26 @@ function exportarCorte(){
   wsAll['!cols'] = wcolAll;
   XLSX.utils.book_append_sheet(wb, wsAll, 'Todos los Cortes');
 
+  // ── SHEET 2: Excluidos del corte (solo DTE / Mantención Flexline-Time) ──
+  const exMap = {};
+  excluidosR.forEach(r => {
+    if(!exMap[r.rut]) exMap[r.rut] = {rut:r.rut, cli:r.cli, pro:r.pro, tip:r.tip, cla:r.cla||'', eje:r.eje, sc:scOf(r), ven:0, dvMax:0, dvWsum:0};
+    const c = exMap[r.rut]; c.ven += r.ven; c.dvMax = Math.max(c.dvMax, r.dv); c.dvWsum += r.ven * r.dv;
+  });
+  const excluidos = Object.values(exMap).map(c => ({...c, dso: Math.round(c.dvWsum / Math.max(c.ven,1))})).sort((a,b) => b.ven - a.ven);
+  if(excluidos.length){
+    const totEx = excluidos.reduce((s,c) => s+c.ven, 0);
+    const wsEx = XLSX.utils.aoa_to_sheet([
+      [`EXCLUIDOS DEL CORTE — SOLO DTE Y/O FLEXLINE-TIME EN MANTENCIÓN — AL ${dateStr}`,'','','','','','','','',''],
+      [`Clientes: ${excluidos.length}   |   Monto vencido: $${Math.round(totEx).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días · sin ningún servicio cortable`,'','','','','','','','',''],
+      [''],
+      ['RUT','Cliente','Producto(s)','Tipo','Clasificación','Ejecutivo','Monto Vencido','DSO (días)','Días Máx.','Antigüedad','Motivo exclusión'],
+      ...excluidos.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla, c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax), txtNo(c.sc)])
+    ]);
+    wsEx['!cols'] = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:14},{wch:22},{wch:18},{wch:12},{wch:12},{wch:22},{wch:44}];
+    XLSX.utils.book_append_sheet(wb, wsEx, 'Excluidos DTE-Mantención');
+  }
+
   // ── SHEET per product ──────────────────────────────────────────────────
   PRODUCTS_CORTE.forEach(prod => {
     const pClientes = prodClientMap[prod];
@@ -1018,9 +1064,9 @@ function exportarCorte(){
 
     if(prod === 'REX+'){
       // Hoja REX+: incluye columna URL REX+
-      const hdrRex = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','URL REX+','Monto Vencido','DSO (días)','Días Máx.','Antigüedad'];
-      const wcolRex = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:22},{wch:35},{wch:18},{wch:12},{wch:12},{wch:22}];
-      const rowsRex = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.eje, c.rexUrl||'—', c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
+      const hdrRex = ['RUT','Cliente','Producto(s)','Tipo','Ejecutivo','URL REX+','Monto Vencido','DSO (días)','Días Máx.','Antigüedad','Servicios a cortar','NO cortar (DTE / Mantención)'];
+      const wcolRex = [{wch:14},{wch:42},{wch:36},{wch:30},{wch:22},{wch:35},{wch:18},{wch:12},{wch:12},{wch:22},{wch:34},{wch:40}];
+      const rowsRex = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.eje, c.rexUrl||'—', c.ven, c.dso, c.dvMax, semaforo(c.dvMax), txtCort(c.sc), txtNo(c.sc)]);
       data = [
         [`SOLICITUD DE CORTE — REX+ — AL ${dateStr}`,'','','','','','','','',''],
         [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido · Solo clientes del Top ${nTop}`,'','','','','','','','',''],
@@ -1031,12 +1077,12 @@ function exportarCorte(){
       ws = XLSX.utils.aoa_to_sheet(data);
       ws['!cols'] = wcolRex;
     } else {
-      const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax)]);
+      const rows = pClientes.map(c => [c.rut, c.cli, c.pro, c.tip, c.cla||'', c.eje, c.ven, c.dso, c.dvMax, semaforo(c.dvMax), txtCort(c.sc), txtNo(c.sc)]);
       data = [
         [`SOLICITUD DE CORTE — ${prod.toUpperCase()} — AL ${dateStr}`,'','','','','','','',''],
         [`Clientes: ${pClientes.length}   |   Monto vencido: $${Math.round(totalVen).toLocaleString('es-CL')}   |   Criterio: ≥ ${minDias} días vencido · Solo clientes del Top ${nTop}`,'','','','','','','',''],
         [''],
-        [...HDR,'Antigüedad'],
+        [...HDR,'Antigüedad','Servicios a cortar','NO cortar (DTE / Mantención)'],
         ...rows
       ];
       ws = XLSX.utils.aoa_to_sheet(data);
